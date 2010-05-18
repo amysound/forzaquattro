@@ -29,6 +29,7 @@ public class Heuristic {
      * @return il valore della funzione euristica
      */
     public Integer calculateHeuristic(GameState gameState){
+        gameState.toString();
         return 0;
     }
 

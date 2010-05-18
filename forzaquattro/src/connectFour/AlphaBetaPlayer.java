@@ -108,7 +108,7 @@ public class AlphaBetaPlayer implements AIPlayerInterface {
                     }
 
                     // PRUNING
-                    if (maxValue<=beta) return new ValueStatePair(maxValue, maxState);
+                    if (maxValue>=beta) return new ValueStatePair(maxValue, maxState);
                     alpha=Math.max(alpha, maxValue);
                 }
             }catch(CloneNotSupportedException exc){
