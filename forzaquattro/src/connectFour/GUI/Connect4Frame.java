@@ -182,16 +182,20 @@ public class Connect4Frame extends javax.swing.JFrame implements ActionListener 
         board.setRedType(redPlayer);
         if (yellowPlayer.equals(ControllerInterface.human) && !redPlayer.equals(ControllerInterface.human)) {
             board.enableHumanVsCpuButton();
+            statistic.setEnableRed(true);
         }
         if (!yellowPlayer.equals(ControllerInterface.human) && redPlayer.equals(ControllerInterface.human)) {
             board.enableCpuVsHumanButton();
+            statistic.setEnableYellow(true);
         }
         if (!yellowPlayer.equals(ControllerInterface.human) && !redPlayer.equals(ControllerInterface.human)) {
             board.enableCpuVsCpuButton();
+            statistic.setEnableYellow(true);
+            statistic.setEnableRed(true);
         }
         if(yellowPlayer.equals(ControllerInterface.human) && redPlayer.equals(ControllerInterface.human))
             board.enalbeHumanVsHumanButton();
-        statistic.setEnable(true);
+        
         controller.initGame(yellowPlayer, menu.getYellowPlayerHorizont(), redPlayer, menu.getRedPlayerHorizont(), statistic);
        
     }

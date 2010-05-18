@@ -21,6 +21,9 @@ import java.util.Observer;
  */
 public class Statistic extends javax.swing.JPanel implements Observer {
 
+    private boolean yellowEnabled;
+    private boolean redEnabled;
+
     /** Creates new form Statistic */
     public Statistic() {
         initComponents();
@@ -29,12 +32,24 @@ public class Statistic extends javax.swing.JPanel implements Observer {
 
 
 
-    public void setEnable(boolean flag){
-
-        yellowNodeTextField.setEnabled(flag);
-        yellowTimeTextField.setEnabled(flag);
+    public void setEnableRed(boolean flag){
         redNodeTextField.setEnabled(flag);
         redTimeTextField.setEnabled(flag);
+        redEnabled=flag;
+    }
+    
+    
+    public void setEnableYellow(boolean flag){
+        yellowNodeTextField.setEnabled(flag);
+        yellowTimeTextField.setEnabled(flag);
+        yellowEnabled=flag;
+    }
+
+    public void setEnable(boolean flag){
+
+        setEnableRed(flag);
+        setEnableYellow(flag);
+
      
 
     }
@@ -161,15 +176,30 @@ public class Statistic extends javax.swing.JPanel implements Observer {
     public void update(Observable o, Object arg) {
         GameStats stat=(GameStats)arg;
         if(!stat.getEndGame()){
+            if(yellowEnabled){
             this.yellowNodeTextField.setText(stat.getYellowLastExaminatedNodeNumber()+"");
-            this.yellowTimeTextField.setText(stat.getYellowLastTime()+" ms");
+            if(stat.getYellowLastTime()>0)
+                this.yellowTimeTextField.setText(stat.getYellowLastTime()+" ms");
+            else
+                this.yellowTimeTextField.setText("meno di 0 ms");
+            }
+            if(redEnabled){
             this.redNodeTextField.setText(stat.getRedLastExaminatedNodeNumber()+"");
-            this.redTimeTextField.setText(stat.getRedLastTime()+" ms");
+            if(stat.getRedLastTime()>0)
+                this.redTimeTextField.setText(stat.getRedLastTime()+" ms");
+            else
+                this.redTimeTextField.setText("meno di 0 ms");
+            }
         }else{
-            this.yellowNodeTextField.setText(stat.getYellowTotalExaminatedNodeNumber()+" (totale)");
-            this.yellowTimeTextField.setText(stat.getYellowTotalTime()+" ms (totale)");
-            this.redNodeTextField.setText(stat.getRedTotalExaminatedNodeNumber()+" (totale)");
-            this.redTimeTextField.setText(stat.getRedTotalTime()+" ms (totale)");
+            if(yellowEnabled){
+                this.yellowNodeTextField.setText(stat.getYellowTotalExaminatedNodeNumber()+" (totale)");
+                this.yellowTimeTextField.setText(stat.getYellowTotalTime()+" ms (totale)");
+            }
+            if(redEnabled){
+                this.redNodeTextField.setText(stat.getRedTotalExaminatedNodeNumber()+" (totale)");
+                this.redTimeTextField.setText(stat.getRedTotalTime()+" ms (totale)");
+            }
+            
             
         }
         
