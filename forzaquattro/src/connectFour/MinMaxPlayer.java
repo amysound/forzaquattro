@@ -7,11 +7,13 @@ package connectFour;
  * $ Date : 23/04/10 15.19.33 (23 aprile 2010) $
  */
 
+
 /**
  * Description of the class MinMaxPlayer.
- *
+ * Classe che implementa un AIPlayerInterface che utilizza l'algoritmo MiniMax
  */
 public class MinMaxPlayer implements AIPlayerInterface {
+
     private final Integer maxUtilityValue = 100;
     private Integer playerId;
     private Heuristic heuristic = new Heuristic();
@@ -36,82 +38,19 @@ public class MinMaxPlayer implements AIPlayerInterface {
     }
 
     /**
-     * MiniMax Decision
-     * determina la prossima mossa da eseguire e restituisce il nuovo stato
+     * metodo che determina la prossima mossa da eseguire e restituisce il nuovo stato
      * @param gameState Stato attuale del gioco
-     * @return nuovo stato
+     * @return nuovo stato raggiunto applicando la mossa scelta
      */
     @Override
     public GameState nextMove(GameState gameState) {
-        System.out.println("Horizon: "+this.horizon);
-        this.setExaminatedNodeNumber((Integer) 0);
-        if(this.horizon!=null)return nextMove(gameState, this.horizon);
-        ValueStatePair maxValueStatePair = maxValue(gameState);
-        System.out.println(maxValueStatePair.getState());
-        return maxValueStatePair.getState();
-    }
-
-    private ValueStatePair maxValue(GameState gameState){
-        setExaminatedNodeNumber(this.examinatedNodeNumber+1);
-        System.out.println("MAX VALUE - Stampa dello stato in input");
-        gameState.stampa();
-        if(gameState.isTerminal())return new ValueStatePair(utility(gameState),gameState);
-        //calcolare il massimo degli stati successori e ritornarlo in output
-        Integer maxValue = (-1)*this.maxUtilityValue-1;
-        GameState maxState = null;
-        for(Integer i=0;i<gameState.getColumns();i++){
-            try{
-                GameState succ = gameState.clone();
-                System.out.println("MAX VALUE - Stampa dello stato clone");
-                succ.stampa();
-                if(succ.doMove(this.playerId, i)){
-                    System.out.println("MAX VALUE - Stampa dello stato a cui è applicata la mossa "+i);
-                    succ.stampa();
-                    ValueStatePair minValueStatePair = minValue(succ);
-                    if(maxValue<minValueStatePair.getValue()){
-                        maxValue=Math.max(maxValue,minValueStatePair.getValue());
-                        maxState=succ;
-                    }
-                }
-            }catch(CloneNotSupportedException exc){
-                exc.printStackTrace();
-            }
-        }
-        return new ValueStatePair(maxValue, maxState);
-    }
-
-    private ValueStatePair minValue(GameState gameState){
-        setExaminatedNodeNumber(this.examinatedNodeNumber+1);
-        System.out.println("MIN VALUE - Stampa dello stato in input");
-        gameState.stampa();
-        if(gameState.isTerminal())return new ValueStatePair(utility(gameState),gameState);
-        //calcolare il minimo degli stati successori e ritornarlo in output
-        Integer minValue = this.maxUtilityValue+1;
-        GameState minState=null;
-        for(Integer i=0;i<gameState.getColumns();i++){
-            try{
-                GameState succ = gameState.clone();
-                System.out.println("MIN VALUE - Stampa dello stato clone");
-                succ.stampa();
-                if(succ.doMove(-1*this.playerId, i)){
-                    System.out.println("MIN VALUE - Stampa dello stato a cui è applicata la mossa "+i);
-                    succ.stampa();
-                    ValueStatePair maxValueStatePair = maxValue(succ);
-                    if(minValue>maxValueStatePair.getValue()){
-                        minValue=Math.min(minValue,maxValueStatePair.getValue());
-                        minState=succ;
-                    }
-                }
-            }catch(CloneNotSupportedException exc){
-                exc.printStackTrace();
-            }
-        }
-        return new ValueStatePair(minValue, minState);
+        this.setExaminatedNodeNumber(0);
+        if(this.horizon==null) return gameState;
+        return nextMove(gameState, this.horizon);
     }
 
     /**
-     * MiniMax Decision con orizzonte
-     * determina la prossima mossa da eseguire e restituisce il nuovo stato
+     * metodo che esegue l'algoritmo MiniMax con orizzonte
      * @param gameState Stato attuale del gioco
      * @param horizon intero che rappresenta il numero di livelli da sviluppare
      * @return nuovo stato
@@ -122,8 +61,8 @@ public class MinMaxPlayer implements AIPlayerInterface {
     }
 
     /**
-     * maxvalue con orizzonte, procedura ausiliaria al calcolo della prossima
-     * mossa con l'algoritmo minmax
+     * maxvalue, procedura ausiliaria al calcolo della prossima mossa con
+     * l'algoritmo Alpha Beta Pruning
      * @param gameState stato da esaminare
      * @param horizon intero che rappresenta il numero di livelli che è ancora
      * possibile esaminare
@@ -131,26 +70,38 @@ public class MinMaxPlayer implements AIPlayerInterface {
      * corrispondente
      */
     private ValueStatePair maxValue(GameState gameState, Integer horizon){
+        // incrementa il numero di nodi esaminati
         setExaminatedNodeNumber(this.examinatedNodeNumber+1);
-        System.out.println("MAX VALUE - ORIZZONTE " + horizon);
-        System.out.println("MAX VALUE - Stampa dello stato in input");
-        gameState.stampa();
+        
+        // CONTROLLO DI TERMINAZIONE: se lo stato è terminale si valuta la funzione di utilità
         if(gameState.isTerminal())return new ValueStatePair(utility(gameState),gameState);
-        if(horizon<=0)return new ValueStatePair(heuristic.heuristic(gameState),gameState);
-        //calcolare il massimo degli stati successori e ritornarlo in output
+
+        /**
+         * CONTROLLO SULL'ORIZZONTE: se abbiamo raggiunto l'orizzonte massimo
+         * valutiamo la funzione euristica
+         */
+        if(horizon<=0)return new ValueStatePair(heuristic.calculateHeuristic(gameState),gameState);
+       
+        // calcolare il massimo degli stati successori e ritornarlo in output
+
+        //inizializzazione del maxValue e del maxState
         Integer maxValue = (-1)*this.maxUtilityValue-1;
         GameState maxState = null;
+
+        //ricerca dello stato con maxValue massimo
         for(Integer i=0;i<gameState.getColumns();i++){
             try{
                 GameState succ = gameState.clone();
-                System.out.println("MAX VALUE - Stampa dello stato clone");
-                succ.stampa();
+
+                // effettuiamo la mossa i
                 if(succ.doMove(this.playerId, i)){
-                    System.out.println("MAX VALUE - Stampa dello stato a cui è applicata la mossa "+i);
-                    succ.stampa();
+
+                    // calcoliamo il minValue dello stato ottenuto applicando la mossa i
                     ValueStatePair minValueStatePair = minValue(succ, horizon-1);
+
+                    // aggiorniamo, se necessario, il maxValue e il maxState
                     if(maxValue<minValueStatePair.getValue()){
-                        maxValue=Math.max(maxValue,minValueStatePair.getValue());
+                        maxValue=minValueStatePair.getValue();
                         maxState=succ;
                     }
                 }
@@ -158,12 +109,13 @@ public class MinMaxPlayer implements AIPlayerInterface {
                 exc.printStackTrace();
             }
         }
+
         return new ValueStatePair(maxValue, maxState);
     }
 
     /**
-     * minvalue con orizzonte, procedura ausiliaria al calcolo della prossima
-     * mossa con l'algoritmo minmax
+     * minvalue, procedura ausiliaria al calcolo della prossima mossa con
+     * l'algoritmo MiniMax
      * @param gameState stato da esaminare
      * @param horizon intero che rappresenta il numero di livelli che è ancora
      * possibile esaminare
@@ -171,26 +123,38 @@ public class MinMaxPlayer implements AIPlayerInterface {
      * corrispondente
      */
     private ValueStatePair minValue(GameState gameState, Integer horizon){
+        // incrementa il numero di nodi esaminati
         setExaminatedNodeNumber(this.examinatedNodeNumber+1);
-        System.out.println("MIN VALUE - ORIZZONTE " + horizon);
-        System.out.println("MIN VALUE - Stampa dello stato in input");
-        gameState.stampa();
+
+        // CONTROLLO DI TERMINAZIONE: se lo stato è terminale si valuta la funzione di utilità
         if(gameState.isTerminal())return new ValueStatePair(utility(gameState),gameState);
-        if(horizon<=0)return new ValueStatePair(heuristic.heuristic(gameState),gameState);
+
+        /**
+         * CONTROLLO SULL'ORIZZONTE: se abbiamo raggiunto l'orizzonte massimo
+         * valutiamo la funzione euristica
+         */
+        if(horizon<=0)return new ValueStatePair(heuristic.calculateHeuristic(gameState),gameState);
+
         //calcolare il minimo degli stati successori e ritornarlo in output
+
+        //inizializzazione del minValue e del minState
         Integer minValue = this.maxUtilityValue+1;
         GameState minState=null;
+
+        //ricerca dello stato con minValue minimo
         for(Integer i=0;i<gameState.getColumns();i++){
             try{
                 GameState succ = gameState.clone();
-                System.out.println("MIN VALUE - Stampa dello stato clone");
-                succ.stampa();
+
+                // effettuiamo la mossa i
                 if(succ.doMove(-1*this.playerId, i)){
-                    System.out.println("MIN VALUE - Stampa dello stato a cui è applicata la mossa "+i);
-                    succ.stampa();
+                
+                    // calcoliamo il minValue dello stato ottenuto applicando la mossa i
                     ValueStatePair maxValueStatePair = maxValue(succ, horizon-1);
+
+                    // aggiorniamo, se necessario, il minValue e il minState
                     if(minValue>maxValueStatePair.getValue()){
-                        minValue=Math.min(minValue,maxValueStatePair.getValue());
+                        minValue=maxValueStatePair.getValue();
                         minState=succ;
                     }
                 }
@@ -198,6 +162,7 @@ public class MinMaxPlayer implements AIPlayerInterface {
                 exc.printStackTrace();
             }
         }
+        
         return new ValueStatePair(minValue, minState);
     }
 

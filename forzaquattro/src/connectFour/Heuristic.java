@@ -7,39 +7,29 @@ package connectFour;
  * $ Date : 23/04/10 15.19.33 (23 aprile 2010) $
  */
 
-
-
-
-// Start of user code to add imports for Heuristic
- 
-// End of user code
-
 /**
  * Description of the class Heuristic.
- *
+ * classe che fornisce l'euristica con cui valutare gli stati non terminali
  */
 
 public class Heuristic {
-		
-		// Start of user code to add fields for Heuristic
-		 
-		// End of user code
-		
-		
-		/**
-		 * Constructor.
-		 */
-		public Heuristic() {
-			// Start of user code for constructor Heuristic
-			super();
-			// End of user code
-		}
-		
-		public Integer heuristic(GameState gameState){
-                    return 0;
-                }
-		
-		// Start of user code to add methods for Heuristic
-		
-		// End of user code
+
+    /**
+     * Constructor.
+     */
+    public Heuristic() {
+            // Start of user code for constructor Heuristic
+            super();
+            // End of user code
+    }
+
+    /**
+     * metodo che valuta la funzione euristica sullo stato passato come argomento
+     * @param gameState stato di cui si vuole valutare l'euristica
+     * @return il valore della funzione euristica
+     */
+    public Integer calculateHeuristic(GameState gameState){
+        return 0;
+    }
+
 }

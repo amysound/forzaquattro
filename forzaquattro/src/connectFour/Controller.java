@@ -11,14 +11,14 @@ import java.util.Observer;
  * $ Date : 23/04/10 15.19.33 (23 aprile 2010) $
 
  * COSE DA FARE
- * 1 - istanziare AlphaBetaPlayer
- * 2 - aggiustare il "pezzotto" per la conversione Long => Integer
+ * OK 1 - istanziare AlphaBetaPlayer
+ * OK 2 - aggiustare il "pezzotto" per la conversione Long => Integer
  * 3 - aggiustare il nome della classe GameStats e dell'attributo actualGameStats
- * 4 - togliere le stampe
+ * OK 4 - togliere le stampe
  *
 /**
  * Description of the class Controller.
- *
+ * Classe che gestisce le interazioni tra l'interfaccia utente e il resto dell'applicazione
  */
 public class Controller implements ControllerInterface {
     private GameState actualGameState;
@@ -31,26 +31,6 @@ public class Controller implements ControllerInterface {
      * Constructor.
      */
     public Controller() {
-    }
-
-    public static void main(String[] args){
-//        GameState gs=new GameState(4, 4);
-//        AIPlayerInterface player=new MinMaxPlayer(1,1);
-//
-//        //MinMaxPlayer player=new MinMaxPlayer(1);
-//
-//        GameState newstate=player.nextMove(gs);
-//        if (newstate!=null){
-//            System.out.println("\nVECCHIO STATO");
-//            gs.stampa();
-//            System.out.println("\nNUOVO STATO");
-//            newstate.stampa();
-//        }else{
-//            System.out.println("c'è stato un problema...");
-//        }
-        ControllerInterface c = new Controller();
-        c.initGame(ControllerInterface.miniMax, 4, ControllerInterface.human, 0,null);
-        c.calculateAIMove(ControllerInterface.yellow);
     }
 
     /**
@@ -77,14 +57,12 @@ public class Controller implements ControllerInterface {
         if(yellowPlayer.equals(ControllerInterface.miniMax))
             this.yellowPlayer=new MinMaxPlayer(ControllerInterface.yellow, yellowLevel);
         else if(yellowPlayer.equals(ControllerInterface.alphaBeta))
-            System.out.println("Istanziare AlphaBetaPlayer");
-//            this.yellowPlayer=new AlphaBetaPlayer(ControllerInterface.yellow, yellowLevel);
+            this.yellowPlayer=new AlphaBetaPlayer(ControllerInterface.yellow, yellowLevel);
 
         if(redPlayer.equals(ControllerInterface.miniMax))
             this.redPlayer=new MinMaxPlayer(ControllerInterface.red, redLevel);
         else if(redPlayer.equals(ControllerInterface.alphaBeta))
-            System.out.println("Istanziare AlphaBetaPlayer");
-//            this.redPlayer=new AlphaBetaPlayer(ControllerInterface.red, redLevel);
+            this.redPlayer=new AlphaBetaPlayer(ControllerInterface.red, redLevel);
         return true;
     }
 
@@ -99,12 +77,10 @@ public class Controller implements ControllerInterface {
     public GameState sendHumanMove(Integer move, Integer player) {
         if((move<0) || (move>=this.actualGameState.getColumns()))
             System.out.println("MOSSA NON VALIDA");
-        else{
+        else
             this.actualGameState.doMove(player, move);
-        }
-        //aggiunte da Ross
+
         actualGameStats.setEndGame(actualGameState.isTerminal());
-        
         return this.actualGameState;
     }
 
@@ -119,14 +95,14 @@ public class Controller implements ControllerInterface {
         GameState newGameState = null;
         Long initTime = new Long(0);
         Long finishTime = new Long(0);
-        long calcTime; //USARE LA FUNZIONE intValue()
+        Long calcTime; //USARE LA FUNZIONE intValue()
         if((player.equals(ControllerInterface.yellow))&&(yellowPlayer!=null)){
             initTime = Calendar.getInstance().getTimeInMillis();
             newGameState = yellowPlayer.nextMove(this.actualGameState);
             finishTime = Calendar.getInstance().getTimeInMillis();
             this.actualGameStats.setYellowLastExaminatedNodeNumber(yellowPlayer.getExaminatedNodeNumber());
             calcTime = finishTime - initTime;
-            this.actualGameStats.setYellowLastTime((int) calcTime);
+            this.actualGameStats.setYellowLastTime(calcTime.intValue());
         }
         else if((player.equals(ControllerInterface.red))&&(redPlayer!=null)){
             initTime = Calendar.getInstance().getTimeInMillis();
@@ -134,16 +110,14 @@ public class Controller implements ControllerInterface {
             finishTime = Calendar.getInstance().getTimeInMillis();
             this.actualGameStats.setRedLastExaminatedNodeNumber(redPlayer.getExaminatedNodeNumber());
             calcTime = finishTime - initTime;
-            this.actualGameStats.setRedLastTime((int) calcTime);
+//            System.out.println("calcTime " + calcTime);
+//            System.out.println(calcTime.intValue());
+            this.actualGameStats.setRedLastTime(calcTime.intValue());
 
         }
-        System.out.println(finishTime-initTime);
         this.actualGameState=newGameState;
-        //aggiunti da Ross
         actualGameStats.setEndGame(actualGameState.isTerminal());
-        
         return newGameState;
     }
 
-    
 }

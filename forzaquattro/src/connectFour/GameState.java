@@ -9,7 +9,7 @@ package connectFour;
 
 /**
  * Description of the class GameState.
- *
+ * classe che tiene traccia dello stato del gioco
  */
 
 /**
@@ -18,219 +18,310 @@ package connectFour;
  */
 public class GameState implements Cloneable{
 
-	/**
-	 * Matrice di interi che rappresenta il tavolo di gioco.
-	 * Ogni cella della matrice può contenere un valore tra:
-	 * 0 => cella vuota;
-	 * 1 => cella occupata da una pedina del giocatore giallo;
-	 * -1 => cella occupata da una pedina del giocatore rosso;
-	 */
-	private Integer[][] board;
-	private Integer rows;
-	private Integer columns;
-	private Integer winner;
-	private Integer player; //il giocatore che ha fatto l'ultima mossa
-	private Integer move;   //ultima mossa effettuata
-	private Integer freeCells;  //numero di celle libere
+    /**
+     * l'attributo board è una Matrice di interi che rappresenta il tavolo di gioco.
+     * Ogni cella della matrice può contenere un valore tra:
+     * 0 => cella vuota;
+     * 1 => cella occupata da una pedina del giocatore giallo;
+     * -1 => cella occupata da una pedina del giocatore rosso;
+     */
+    private Integer[][] board;
+    private Integer rows;       // numero di righe della tabella
+    private Integer columns;    // numero di colonne della tabella
+    private Integer winner;     // intero che individua il vincitore della partita;
+    private Integer player;     // intero che individua il giocatore che ha effettuato l'ultima mossa
+    private Integer move;       // intero che individua l'ultima mossa effettuata
+    private Integer freeCells;  // numero di celle libere
 
-	public GameState(){
-		this(8,7);
-	}
+    /**
+     * Constructor.
+     */
+    public GameState(){
+        this(8,7);
+    }
 
-	public GameState(Integer rows, Integer columns){
-		setRows(rows);
-		setColumns(columns);
-		setWinner(2);
-		setPlayer(0);
-		setMove(-1);
-		setFreeCells(rows*columns);
-		board = new Integer[rows][columns];
-		initializes();
-	}
+    public GameState(Integer rows, Integer columns){
+        setRows(rows);
+        setColumns(columns);
+        setWinner(2);
+        setPlayer(0);
+        setMove(-1);
+        setFreeCells(rows*columns);
+        board = new Integer[rows][columns];
+        initializes();
+    }
 
-	public Integer getRows() {
-		return rows;
-	}
+    public Integer getRows() {
+        return rows;
+    }
 
-	private void setRows(Integer rows) {
-		this.rows = rows;
-	}
+    private void setRows(Integer rows) {
+        this.rows = rows;
+    }
 
-	public Integer getColumns() {
-		return columns;
-	}
+    public Integer getColumns() {
+        return columns;
+    }
 
-	private void setColumns(Integer columns) {
-		this.columns = columns;
-	}
+    private void setColumns(Integer columns) {
+        this.columns = columns;
+    }
 
-	/**
-	 * metodo per la verifica del vincitore
-	 * @return
-	 * -1 => ha vinto il giocatore rosso;
-	 * 0 => la partita è finita in pareggio;
-	 * 1 => ha vinto il giocatore giallo;
-	 * 2 => la partita non è ancora finita;
-	 */
-	public Integer getWinner() {
-		return winner;
-	}
+    /**
+     * metodo per la verifica del vincitore
+     * @return
+     * -1 => ha vinto il giocatore rosso;
+     * 0 => la partita è finita in pareggio;
+     * 1 => ha vinto il giocatore giallo;
+     * 2 => la partita non è ancora finita;
+     */
+    public Integer getWinner() {
+        return winner;
+    }
 
-	private void setWinner(Integer winner) {
-		this.winner = winner;
-	}
+    private void setWinner(Integer winner) {
+        this.winner = winner;
+    }
 
-	public Integer getMove(){
-		return move;
-	}
+    public Integer getMove(){
+        return move;
+    }
 
-	private void setPlayer(Integer player) {
-		this.player = player;
-	}
+    private void setPlayer(Integer player) {
+        this.player = player;
+    }
 
-	public Integer getPlayer() {
-		return player;
-	}
+    public Integer getPlayer() {
+        return player;
+    }
 
-	private void setMove(Integer move) {
-		this.move = move;
-	}
-	/**
-	 * metodo per effettuare le giocate
-	 * @param player intero che rappresenta il giocatore di turno
-	 * @param column intero che rappresenta la colonna scelta dal giocatore
-	 * @return true se la mossa è stata effettuata con successo, false altrimenti
-	 */
-	public Boolean doMove(Integer player, Integer column){
-		Integer i=0;
-		if(this.isTerminal()){
-			System.out.println("Mossa non consentita - PARTITA TERMINATA");
-			return false;
-		}
-		while(i<this.rows && !this.board[i][column].equals(0)) i++;
-		if(i==this.rows){
-			System.out.println("Mossa non consentita - COLONNA PIENA");
-			return false;
-		}
-		board[i][column]=player;
-		this.setPlayer(player);
-		this.setMove(column);
-		this.setFreeCells(this.freeCells-1);
-                if(hasWin(i, column))setWinner(player);
-                else if(this.freeCells==0)setWinner(0);
-		//this.stampa();
-		return true;
-	}
+    private void setMove(Integer move) {
+        this.move = move;
+    }
 
-	private Boolean hasWin(Integer row, Integer column){
-		Integer actualPlayer=this.board[row][column];
-		Integer i;
+    /**
+     * metodo per effettuare le giocate
+     * @param player intero che rappresenta il giocatore di turno
+     * @param column intero che rappresenta la colonna scelta dal giocatore
+     * @return true se la mossa è stata effettuata con successo, false altrimenti
+     */
+    public Boolean doMove(Integer player, Integer column){
+        Integer i=0;
+        // se lo stato è terminale non sono applicabili altre mosse
+        if(this.isTerminal()) return false;
 
-		if(column<this.columns-3){
-			//controlla a destra sulla riga
-			i = 1;
-			while(i <= 3 && this.board[row][i+column].equals(actualPlayer)) i++;
-			if (i.equals(4)) return true;
+        // cerca la riga in cui inserire la pedina nella colonna specificata
+        while(i<this.rows && !this.board[i][column].equals(0)) i++;
 
-			if(row<this.rows-3){
-				//controlla in diagonale a destra in alto
-				i = 1;
-				while(i <= 3 && this.board[i+row][i+column].equals(actualPlayer)) i++;
-				if (i.equals(4)) return true;
-			}
-			if(row>2){
-				//controlla in diagonale a destra in basso
-				i = 1;
-				while(i <= 3 && this.board[row-i][i+column].equals(actualPlayer)) i++;
-				if (i.equals(4)) return true;
-			}
-		}
-		if(column>2){
-			//controlla a sinistra sulla riga
-			i = 1;
-			while(i <= 3 && this.board[row][column-i].equals(actualPlayer)) i++;
-			if (i.equals(4)) return true;
-			if(row<this.rows-3){
-				//controlla in diagonale a sinistra in alto
-				i = 1;
-				while(i <= 3 && this.board[i+row][column-i].equals(actualPlayer)) i++;
-				if (i.equals(4)) return true;
-			}
-			if(row>2){
-				//controlla in diagonale a sinistra in basso
-				i = 1;
-				while(i <= 3 && this.board[row-i][column-i].equals(actualPlayer)) i++;
-				if (i.equals(4)) return true;
-			}
-		}
-		if(row<this.rows-3){
-			//controlla in alto sulla colonna
-			i = 1;
-			while(i <= 3 && this.board[i+row][column].equals(actualPlayer)) i++;
-			if (i.equals(4)) return true;
-		}
-		if(row>2){
-			//controlla in basso sulla colonna
-			i = 1;
-			while(i <= 3 && this.board[row-i][column].equals(actualPlayer)) i++;
-			if (i.equals(4)) return true;
-		}
+        // se la colonna è già piena non è possibile effettuare la mossa desiderata
+        if(i==this.rows) return false;
 
-		return false;
-	}
+        //effettua la mossa e aggiorna lo stato del gioco
+        board[i][column]=player;
+        this.setPlayer(player);
+        this.setMove(column);
+        this.setFreeCells(this.freeCells-1);
 
-	/**
-	 * metodo per conoscere lo stato di una cella di gioco
-	 * @param row
-	 * @param column
-	 * @return lo stato della cella [row,column]
-	 */
-	public Integer getCellState(Integer row, Integer column){
-		return this.board[row][column];
-	}
+        /* se c'è un vincitore oppure la partita è finita in pareggioaggiorna la
+         * variabile winner
+         */
+        if(hasWin(i, column))setWinner(player);
+        else if(this.freeCells==0)setWinner(0);
 
-	private void initializes(){
-		for(Integer i = 0; i < this.rows; i++){
-			for(Integer j = 0; j < this.columns; j++){
-				this.board[i][j] = 0;
-			}
-		}
-	}
+        return true;
+    }
 
-	public void stampa(){
-		System.out.println("\nSTAMPA DI CONTROLLO");
-		for(Integer i = 0; i < this.rows; i++){
-			for(Integer j = 0; j < this.columns; j++){
-				System.out.print("["+this.board[i][j]+"]");
-			}
-			System.out.println();
-		}
-	}
+    /**
+     * metodo che verifica se la mossa effettuata ha determinato una vittoria
+     * @param row riga della cella in cui è stata inserita l'ultima pedina
+     * @param column colonna della cella in cui è stata inserita l'ultima pedina
+     * @return true se la mossa ha determinato una vittoria; false altrimenti
+     */
+    private Boolean hasWin2(Integer row, Integer column){
+        Integer actualPlayer=this.board[row][column];
+        Integer i;
 
-	private void setFreeCells(Integer freeCells) {
-		this.freeCells = freeCells;
-	}
+        if(column<this.columns-3){
+            //controlla a destra sulla riga
+            i = 1;
+            while(i <= 3 && this.board[row][i+column].equals(actualPlayer)) i++;
+            if (i.equals(4)) return true;
 
-	private Integer getFreeCells() {
-		return freeCells;
-	}
-
-        public Boolean isTerminal(){
-            return(this.winner!=2);
+            if(row<this.rows-3){
+                //controlla in diagonale a destra in alto
+                i = 1;
+                while(i <= 3 && this.board[i+row][i+column].equals(actualPlayer)) i++;
+                if (i.equals(4)) return true;
+            }
+            if(row>2){
+                //controlla in diagonale a destra in basso
+                i = 1;
+                while(i <= 3 && this.board[row-i][i+column].equals(actualPlayer)) i++;
+                if (i.equals(4)) return true;
+            }
         }
+        if(column>2){
+            //controlla a sinistra sulla riga
+            i = 1;
+            while(i <= 3 && this.board[row][column-i].equals(actualPlayer)) i++;
+            if (i.equals(4)) return true;
+
+            if(row<this.rows-3){
+                //controlla in diagonale a sinistra in alto
+                i = 1;
+                while(i <= 3 && this.board[i+row][column-i].equals(actualPlayer)) i++;
+                if (i.equals(4)) return true;
+            }
+            if(row>2){
+                //controlla in diagonale a sinistra in basso
+                i = 1;
+                while(i <= 3 && this.board[row-i][column-i].equals(actualPlayer)) i++;
+                if (i.equals(4)) return true;
+            }
+        }
+        if(row<this.rows-3){
+            //controlla in alto sulla colonna
+            i = 1;
+            while(i <= 3 && this.board[i+row][column].equals(actualPlayer)) i++;
+            if (i.equals(4)) return true;
+        }
+        if(row>2){
+            //controlla in basso sulla colonna
+            i = 1;
+            while(i <= 3 && this.board[row-i][column].equals(actualPlayer)) i++;
+            if (i.equals(4)) return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * metodo che verifica se la mossa effettuata ha determinato una vittoria
+     * @param row riga della cella in cui è stata inserita l'ultima pedina
+     * @param column colonna della cella in cui è stata inserita l'ultima pedina
+     * @return true se la mossa ha determinato una vittoria; false altrimenti
+     */
+    private Boolean hasWin(Integer row, Integer column){
+        Integer i;
+
+        //CONTROLLO ORIZZONTALE
+        i=0;
+//        System.out.println("CONTROLLO ORIZZONTALE");
+        while((i<4)&&(column+i<this.columns)){
+//            System.out.println("ENTRA NEL WHILE");
+            if(checkWin(row,column+i,0, -1)) return true;
+            i++;
+        }
+
+        //CONTROLLO DIAGONALE
+        i=0;
+//        System.out.println("CONTROLLO DIAGONALE");
+        while((i<4)&&(column+i<this.columns)&&(row+i<this.rows)){
+//            System.out.println("ENTRA NEL WHILE");
+            if(checkWin(row+i,column+i,-1, -1)) return true;
+            i++;
+        }
+
+        //CONTROLLO ANTIDIAGONALE
+//        System.out.println("CONTROLLO ANTIDIAGONALE");
+        i=0;
+        while((i<4)&&(column+i<this.columns)&&(row-i<this.rows-3)){
+//            System.out.println("ENTRA NEL WHILE");
+            if(checkWin(row-i,column+i,+1, -1)) return true;
+            i++;
+        }
+
+        //CONTROLLO VERTICALE
+        if(row>2){
+            Integer actualPlayer = this.board[row][column];
+            i = 1;
+            while(i <= 3 && this.board[row-i][column].equals(actualPlayer)) i++;
+            if (i.equals(4)) return true;
+        }
+
+        return false;
+    }
+
+    private Boolean checkWin(Integer x, Integer y, Integer dirX, Integer dirY){
+        Integer actualPlayer;
+        Integer i;
+
+        if(x<0 || y<0) return false;
+        
+        actualPlayer = this.board[x][y];
+//        System.out.println("CELLA LETTA (ACTUALPLAYER) ["+x+";"+y+"] = "+actualPlayer);
+        i = 1;
+        while(i <= 3 &&
+              x+(i*dirX)>=0 &&
+              y+(i*dirY)>=0 &&
+              this.board[x+(i*dirX)][y+(i*dirY)].equals(actualPlayer))
+        {
+//            System.out.println("CELLA LETTA ["+(x+(i*dirX))+";"+(y+(i*dirY))+"] = "+this.board[x+(i*dirX)][y+(i*dirY)]);
+            i++;
+        }
+
+        if (i.equals(4)) return true;
+        return false;
+    }
+
+    /**
+     * metodo per conoscere lo stato di una cella di gioco
+     * @param row riga della cella di cui si vuole conoscere lo stato
+     * @param column colonna della cella di cui si vuole conoscere lo stato
+     * @return lo stato della cella board[row][column]
+     */
+    public Integer getCellState(Integer row, Integer column){
+        return this.board[row][column];
+    }
+
+    /**
+     * metodo privato per l'inizializzazione delle celle della matrice board
+     */
+    private void initializes(){
+        for(Integer i = 0; i < this.rows; i++){
+            for(Integer j = 0; j < this.columns; j++){
+                this.board[i][j] = 0;
+            }
+        }
+    }
+
+    @Override
+    public String toString(){
+        String gameState = "\nSTATO DEL GIOCO\n";
+        for(Integer i = 0; i < this.rows; i++){
+            for(Integer j = 0; j < this.columns; j++){
+               gameState+="["+this.board[i][j]+"]";
+            }
+            gameState+="\n";
+        }
+        return gameState;
+    }
+
+    private void setFreeCells(Integer freeCells) {
+            this.freeCells = freeCells;
+    }
+
+    private Integer getFreeCells() {
+            return freeCells;
+    }
+
+    public Boolean isTerminal(){
+        return(this.winner!=2);
+    }
 
     @Override
     protected GameState clone() throws CloneNotSupportedException {
         GameState gs = new GameState(this.getRows(),this.getColumns());
-	gs.setWinner(this.winner);
-	gs.setPlayer(this.player); //il giocatore che ha fatto l'ultima mossa
-	gs.setMove(this.move);   //ultima mossa effettuata
-	gs.setFreeCells(this.freeCells);
+        gs.setWinner(this.winner);
+        gs.setPlayer(this.player); //il giocatore che ha fatto l'ultima mossa
+        gs.setMove(this.move);   //ultima mossa effettuata
+        gs.setFreeCells(this.freeCells);
         for(Integer i = 0; i < this.rows; i++){
-                for(Integer j = 0; j < this.columns; j++){
-                        gs.board[i][j] = this.getCellState(i, j);
-                }
+            for(Integer j = 0; j < this.columns; j++){
+                gs.board[i][j] = this.getCellState(i, j);
+            }
         }
         return gs;
     }
+
 }
