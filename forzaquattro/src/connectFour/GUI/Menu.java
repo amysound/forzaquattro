@@ -71,6 +71,14 @@ public class Menu extends javax.swing.JPanel implements ActionListener {
         startButton.setEnabled(flag);
     }
 
+    public void setEnableInitGame(boolean flag){
+        redPlayerCombo.setEnabled(flag);
+        redHorizontCombo.setEnabled(flag);
+        yellowPlayerCombo.setEnabled(flag);
+        yellowHorizontCombo.setEnabled(flag);
+        startButton.setEnabled(flag);
+    }
+
     public String getYellowPlayer(){
        return yellowPlayerCombo.getSelectedItem().toString();
     }

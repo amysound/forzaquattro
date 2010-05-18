@@ -82,7 +82,7 @@
     </Component>
     <Component class="javax.swing.JLabel" name="yellowTimeLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Tempo medio di calcolo"/>
+        <Property name="text" type="java.lang.String" value="Tempo di calcolo"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="yellowTimeTextField">
@@ -126,7 +126,7 @@
     </Component>
     <Component class="javax.swing.JLabel" name="redTimeLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Tempo medio di calcolo"/>
+        <Property name="text" type="java.lang.String" value="Tempo di calcolo"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="redTimeTextField">

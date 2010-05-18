@@ -64,7 +64,7 @@ public class Statistic extends javax.swing.JPanel implements Observer {
 
         yellowNodeTextField.setEditable(false);
 
-        yellowTimeLabel.setText("Tempo medio di calcolo");
+        yellowTimeLabel.setText("Tempo di calcolo");
 
         yellowTimeTextField.setEditable(false);
 
@@ -81,7 +81,7 @@ public class Statistic extends javax.swing.JPanel implements Observer {
 
         redNodeTextField.setEditable(false);
 
-        redTimeLabel.setText("Tempo medio di calcolo");
+        redTimeLabel.setText("Tempo di calcolo");
 
         redTimeTextField.setEditable(false);
 

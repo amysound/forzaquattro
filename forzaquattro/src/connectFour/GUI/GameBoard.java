@@ -128,6 +128,8 @@ public class GameBoard extends javax.swing.JPanel implements MouseListener, Acti
 
     private JButton next= new JButton("next");
 
+    private JLabel turnLabel=new JLabel("Tocca al Giocatore Giallo");
+
     /*memorizza il turno di gioco
      * turn=yellow tocca al giocatore giallo
      * turn=red tocca al giocatore rosso
@@ -144,11 +146,13 @@ public class GameBoard extends javax.swing.JPanel implements MouseListener, Acti
 
         GridBagConstraints layoutCostraints = initLayout();
 
-        initBoard(layoutCostraints);
-
         initMoves(layoutCostraints);
 
         initCpuMove(layoutCostraints);
+
+        initBoard(layoutCostraints);
+
+        initTurnLabel(layoutCostraints);
 
         initOtherComponents(c);
 
@@ -222,6 +226,18 @@ public class GameBoard extends javax.swing.JPanel implements MouseListener, Acti
     }
 
     /**
+     * Inizializza la label che tiene traccia del turno
+     * @param layoutCostraints
+     */
+    private void initTurnLabel(GridBagConstraints layoutCostraints) {
+
+        layoutCostraints.gridy = 10;
+        layoutCostraints.gridx = 0;
+        layoutCostraints.gridwidth = 7;
+        this.add(turnLabel, layoutCostraints);
+    }
+
+    /**
      * Inizializza tutte le altre componenti
      * @param c
      */
@@ -276,16 +292,22 @@ public class GameBoard extends javax.swing.JPanel implements MouseListener, Acti
             enabledCpuButton(true);
       }
 
+       public void enalbeHumanVsHumanButton() {
+            enabledHumanButton(true);
+    }
+
       
 
       //Metodo per cambiare il turno di gioco
       public void changeTurn(){
           if (turn.equals(yellow)){
             turnRed();
+            turnLabel.setText("Tocca al Giocatore Rosso");
           }
 
           else{
             turnYellow();
+            turnLabel.setText("Tocca al Giocatore Giallo");
           }
 
 
@@ -485,6 +507,10 @@ public class GameBoard extends javax.swing.JPanel implements MouseListener, Acti
         }
         return s;
     }
+
+    
+
+
 
 }
 
