@@ -225,9 +225,9 @@ public class GameState implements Cloneable{
         //CONTROLLO ANTIDIAGONALE
 //        System.out.println("CONTROLLO ANTIDIAGONALE");
         i=0;
-        while((i<4)&&(column+i<this.columns)&&(row-i<this.rows-3)){
+        while((i<4)&&(column+i<this.columns)){
 //            System.out.println("ENTRA NEL WHILE");
-            if(checkWin(row-i,column+i,+1, -1)) return true;
+            if((row-i<this.rows-3)&&(checkWin(row-i,column+i,+1, -1))) return true;
             i++;
         }
 
