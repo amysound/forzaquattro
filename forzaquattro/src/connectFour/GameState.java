@@ -132,6 +132,7 @@ public class GameState implements Cloneable{
     }
 
     /**
+     * @deprecated
      * metodo che verifica se la mossa effettuata ha determinato una vittoria
      * @param row riga della cella in cui è stata inserita l'ultima pedina
      * @param column colonna della cella in cui è stata inserita l'ultima pedina
@@ -196,12 +197,13 @@ public class GameState implements Cloneable{
     }
 
     /**
+     * @deprecated
      * metodo che verifica se la mossa effettuata ha determinato una vittoria
      * @param row riga della cella in cui è stata inserita l'ultima pedina
      * @param column colonna della cella in cui è stata inserita l'ultima pedina
      * @return true se la mossa ha determinato una vittoria; false altrimenti
      */
-    private Boolean hasWin(Integer row, Integer column){
+    private Boolean hasWin3(Integer row, Integer column){
         Integer i;
 
         //CONTROLLO ORIZZONTALE
@@ -242,6 +244,198 @@ public class GameState implements Cloneable{
         return false;
     }
 
+    /**
+     * metodo che verifica se la mossa effettuata ha determinato una vittoria
+     * @param row riga della cella in cui è stata inserita l'ultima pedina
+     * @param column colonna della cella in cui è stata inserita l'ultima pedina
+     * @return true se la mossa ha determinato una vittoria; false altrimenti
+     */
+    private Boolean hasWin(Integer row, Integer column){
+        Integer i;
+
+        //CONTROLLO ORIZZONTALE
+        i=0;
+        while(i<4){
+            if(checkHorizontalWin(row,column+i)) return true;
+            i++;
+        }
+
+        //CONTROLLO DIAGONALE
+        i=0;
+        while(i<4){
+//            System.out.println("ENTRA NEL WHILE");
+            if(checkDiagonalWin(row+i,column+i)) return true;
+            i++;
+        }
+
+        //CONTROLLO ANTIDIAGONALE
+        i=0;
+        while(i<4){
+            if(checkAntiDiagonalWin(row-i,column+i)) return true;
+            i++;
+        }
+
+        //CONTROLLO VERTICALE
+        if(checkVerticalWin(row,column)) return true;
+
+        return false;
+    }
+
+    /**
+     * metodo per il controllo del forza quattro in orizzontale. A partire dalle
+     * coordinate inserite verifica che le 3 celle a sinistra e in basso
+     * abbiano lo stesso valore
+     * @param x riga di partenza
+     * @param y colonna di partenza
+     * @return true se trova il forza quattro; false nei seguenti casi:
+     * - se le coordinate inserite non sono valide; ciò avviene se la riga o
+     *   la colonna inserita è fuori dai limiti della matrice oppure se la colonna
+     *   è tale che la funzione non è applicabile
+     * - se nelle quattro colonne a partire dalla cella [x][y] verso sinistra non
+     *   si trova un forza quattro
+     */
+    private Boolean checkHorizontalWin(Integer x, Integer y){
+        Integer actualPlayer;
+        Integer i;
+
+        /**
+         * controllo sulle coordinate inserite:
+         * - x deve essere una riga valida, e quindi un intero tra 0 e this.rows
+         * - y deve essere una colonna valida a cui è applicabile la funzione
+         *   e quindi deve essere compreso tra 3 e this.columns
+         */
+        if(x<0 || x>=this.rows || y<3 || y>=this.columns) return false;
+
+        // lettura del colore della cella inserita
+        actualPlayer = this.board[x][y];
+
+        // controllo forza quattro sulla riga
+        i = 1;
+        while(i < 4 && this.board[x][y-i].equals(actualPlayer)) i++;
+        if (i.equals(4)) return true;
+
+        return false;
+    }
+    
+    /**
+     * metodo per il controllo del forza quattro in diagonale. A partire dalle
+     * coordinate inserite verifica che le 3 celle a sinistra sulla stessa riga
+     * abbiano lo stesso valore
+     * @param x riga di partenza
+     * @param y colonna di partenza
+     * @return true se trova il forza quattro; false nei seguenti casi:
+     * - se le coordinate inserite non sono valide; ciò avviene se la riga o
+     *   la colonna inserita è fuori dai limiti della matrice oppure se la riga 
+     *   (o la colonna) è tale che la funzione non è applicabile
+     * - se nelle quattro colonne a partire dalla cella [x][y] verso sinistra non
+     *   si trova un forza quattro
+     */
+    private Boolean checkDiagonalWin(Integer x, Integer y){
+        Integer actualPlayer;
+        Integer i;
+
+        /**
+         * controllo sulle coordinate inserite:
+         * - x deve essere una riga valida a cui è applicabile la funzione
+         *   e quindi un intero tra 3 e this.rows
+         * - y deve essere una colonna valida a cui è applicabile la funzione
+         *   e quindi deve essere compreso tra 3 e this.columns
+         */
+        if(x<3 || x>=this.rows || y<3 || y>=this.columns) return false;
+
+        // lettura del colore della cella inserita
+        actualPlayer = this.board[x][y];
+
+        // controllo forza quattro sulla diagonale
+        i = 1;
+        while(i < 4 && this.board[x-i][y-i].equals(actualPlayer)) i++;
+        if (i.equals(4)) return true;
+
+        return false;
+    }
+
+    /**
+     * metodo per il controllo del forza quattro in antidiagonale. A partire dalle
+     * coordinate inserite verifica che le 3 celle a sinistra e verso l'alto
+     * abbiano lo stesso valore
+     * @param x riga di partenza
+     * @param y colonna di partenza
+     * @return true se trova il forza quattro; false nei seguenti casi:
+     * - se le coordinate inserite non sono valide; ciò avviene se la riga o
+     *   la colonna inserita è fuori dai limiti della matrice oppure se la riga
+     *   (o colonna) inserita è tale che la funzione non è applicabile.
+     * - se nelle quattro colonne a partire dalla cella [x][y] verso sinistra
+     *   e verso l'alto non si trova un forza quattro
+     */
+    private Boolean checkAntiDiagonalWin(Integer x, Integer y){
+        Integer actualPlayer;
+        Integer i;
+
+        /**
+         * controllo sulle coordinate inserite:
+         * - x deve essere una riga valida a cui è applicabile la funzione
+         *   e quindi un intero tra 0 e this.rows-3
+         * - y deve essere una colonna valida a cui è applicabile la funzione
+         *   e quindi deve essere compreso tra 3 e this.columns
+         */
+        if(x<0 || x>=this.rows-3 || y<3 || y>=this.columns) return false;
+
+        // lettura del colore della cella inserita
+        actualPlayer = this.board[x][y];
+
+        // controllo forza quattro sull'antidiagonale
+        i = 1;
+        while(i < 4 && this.board[x+i][y-i].equals(actualPlayer)) i++;
+        if (i.equals(4)) return true;
+
+        return false;
+    }
+
+
+    /**
+     * metodo per il controllo del forza quattro in verticale. A partire dalle
+     * coordinate inserite verifica che le 3 celle in basso abbiano lo stesso valore
+     * @param x riga di partenza
+     * @param y colonna di partenza
+     * @return true se trova il forza quattro; false nei seguenti casi:
+     * - se le coordinate inserite non sono valide; ciò avviene se la riga o
+     *   la colonna inserita è fuori dai limiti della matrice oppure se la riga
+     *   è tale che la funzione non è applicabile
+     * - se nelle quattro colonne a partire dalla cella [x][y] verso il basso non
+     *   si trova un forza quattro
+     */
+    private Boolean checkVerticalWin(Integer x, Integer y){
+        Integer actualPlayer;
+        Integer i;
+
+        /**
+         * controllo sulle coordinate inserite:
+         * - x deve essere una riga valida a cui è applicabile la funzione
+         *   e quindi un intero tra 3 e this.rows
+         * - y deve essere una colonna valida, e quindi deve essere compreso tra
+         *   0 e this.columns
+         */
+        if(x<3 || x>=this.rows || y<0 || y>=this.columns) return false;
+
+        // lettura del colore della cella inserita
+        actualPlayer = this.board[x][y];
+
+        // controllo forza quattro sulla colonna
+        i = 1;
+        while(i < 4 && this.board[x-i][y].equals(actualPlayer)) i++;
+        if (i.equals(4)) return true;
+
+        return false;
+    }
+
+    /**
+     * @deprecated
+     * @param x
+     * @param y
+     * @param dirX
+     * @param dirY
+     * @return
+     */
     private Boolean checkWin(Integer x, Integer y, Integer dirX, Integer dirY){
         Integer actualPlayer;
         Integer i;
