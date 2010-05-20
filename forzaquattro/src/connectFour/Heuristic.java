@@ -13,7 +13,8 @@ package connectFour;
  */
 
 public class Heuristic {
-
+    private Integer numberToSearch=1;
+    Integer c=0;
     /**
      * Constructor.
      */
@@ -29,7 +30,7 @@ public class Heuristic {
      * @return il valore della funzione euristica
      */
     public Integer calculateHeuristic(GameState gameState){
-        return countConnectThreeHeuristic(gameState);
+        return countConnectHeuristic(gameState);
     }
 
     private Integer naiveHeuristic(GameState gameState){
@@ -55,10 +56,42 @@ public class Heuristic {
      * @return
      */
     private Integer countConnectThreeHeuristic(GameState gameState){
+        //c++;
         Integer temp = countConnectThree(gameState, ControllerInterface.yellow)-countConnectThree(gameState, ControllerInterface.red);
+      //  System.out.println(c+": "+temp);
         return temp;
     }
 
+
+    /**
+     * valori valutati per il giocatore yellow
+     * @param gameState
+     * @return
+     */
+    private Integer countConnectHeuristic(GameState gameState){
+        //c++;
+        Integer yellowOne;
+        Integer yellowTwo;
+        Integer yellowThree;
+        Integer redOne;
+        Integer redTwo;
+        Integer redThree;
+
+        Integer heuristicValue;
+
+        yellowOne = countConnect(gameState, ControllerInterface.yellow, 1);
+        yellowTwo = countConnect(gameState, ControllerInterface.yellow, 2);
+        yellowThree = countConnect(gameState, ControllerInterface.yellow, 3);
+
+
+        redOne = countConnect(gameState, ControllerInterface.red, 1);
+        redTwo = countConnect(gameState, ControllerInterface.red, 2);
+        redThree = countConnect(gameState, ControllerInterface.red, 3);
+      //  System.out.println(c+": "+temp);
+        heuristicValue = yellowOne+(2*yellowTwo)+(3*yellowThree)-(redOne+(2*redTwo)+(3*redThree));
+
+        return heuristicValue;
+    }
 
     /**
      *
@@ -127,7 +160,7 @@ public class Heuristic {
      *   si trova un forza quattro
      */
     private Boolean checkHorizontal(Integer x, Integer y, GameState gameState, Integer player){
-        Integer numberToSearch=3;
+        
         Integer i;
         Integer countPieces; //contiene il numero di celle occupate da pedine di player
         Integer countFreeCells; //contiene il numero di celle vuote
@@ -147,10 +180,11 @@ public class Heuristic {
         while(i < 4){
             if(gameState.getCellState(x, y-i).equals(-1*player)) return false;
             if(gameState.getCellState(x, y-i).equals(player)) countPieces++;
+            else countFreeCells++;
             i++;
         }
 
-        if (countPieces.equals(numberToSearch)) return true;
+        if (countPieces>=numberToSearch) return true;
 
         return false;
     }
@@ -184,14 +218,13 @@ public class Heuristic {
         countPieces=0;
         countFreeCells=0;
         while(i < 4){
-            if(countFreeCells.equals(2)) return false;
+            if(gameState.getCellState(x-i, y-i).equals(-1*player)) return false;
             if(gameState.getCellState(x-i, y-i).equals(player)) countPieces++;
-            else if(gameState.getCellState(x-i, y-i).equals(0)) countFreeCells++;
-            else return false;
+            else countFreeCells++;
             i++;
         }
 
-        if (countPieces.equals(3)) return true;
+        if (countPieces>=numberToSearch) return true;
 
         return false;
     }
@@ -221,18 +254,17 @@ public class Heuristic {
         if(x<0 || x>=gameState.getRows()-3 || y<3 || y>=gameState.getColumns()) return false;
 
         // controllo forza quattro sull'antidiagonale
-        i = 0;
+                i = 0;
         countPieces=0;
         countFreeCells=0;
         while(i < 4){
-            if(countFreeCells.equals(2)) return false;
+            if(gameState.getCellState(x+i, y-i).equals(-1*player)) return false;
             if(gameState.getCellState(x+i, y-i).equals(player)) countPieces++;
-            else if(gameState.getCellState(x+i, y-i).equals(0)) countFreeCells++;
-            else return false;
+            else countFreeCells++;
             i++;
         }
 
-        if (countPieces.equals(3)) return true;
+        if (countPieces>=numberToSearch) return true;
 
         return false;
     }
@@ -250,7 +282,8 @@ public class Heuristic {
      */
     private Boolean checkVertical(Integer x, Integer y, GameState gameState, Integer player){
         Integer i;
-
+        Integer countPieces;
+        Integer countFreeCells;
         /**
          * controllo sulle coordinate inserite:
          * - x deve essere una riga valida a cui è applicabile la funzione
@@ -261,13 +294,212 @@ public class Heuristic {
         if(x<3 || x>=gameState.getRows() || y<0 || y>=gameState.getColumns()) return false;
 
         // controllo forza quattro sulla colonna
-        if(gameState.getCellState(x, y).equals(0)){
-            i = 1;
+        if(gameState.getCellState(x-3, y).equals(0)) return false;
+        if(gameState.getCellState(x-3, y).equals(-1*player)) return false;
 
-            while((i < 4)&&(gameState.getCellState(x-i, y).equals(player))) i++;
+        i = 2;
+        countPieces=1;
+        countFreeCells=0;
 
-            if (i.equals(4)) return true;
+        while(i >= 0){
+            if(gameState.getCellState(x-i, y).equals(-1*player)) return false;
+            if(gameState.getCellState(x-i, y).equals(player)) countPieces++;
+            else return true;
+            i--;
         }
+
+        if (countPieces>=numberToSearch) return true;
+
+        return false;
+    }
+
+    private Integer countConnect(GameState gameState, Integer player, Integer numberToSearch){
+        Integer row;
+        Integer column;
+        Integer connect;
+
+        connect=0;
+        for(row=0;row<gameState.getRows();row++){
+
+            for(column=0;column<gameState.getColumns();column++){
+                //CONTROLLO ORIZZONTALE
+                if(checkHorizontal(row,column, gameState, player, numberToSearch)) connect++;
+
+                //CONTROLLO DIAGONALE
+                if(checkDiagonal(row,column, gameState, player, numberToSearch)) connect++;
+
+                //CONTROLLO ANTIDIAGONALE
+                if(checkAntiDiagonal(row,column, gameState, player, numberToSearch)) connect++;
+
+                //CONTROLLO VERTICALE
+                if(checkVertical(row,column, gameState, player, numberToSearch)) connect++;
+            }
+        }
+        return connect;
+    }
+
+
+    /**
+     * @param x riga di partenza
+     * @param y colonna di partenza
+     * @return true se trova il forza quattro; false nei seguenti casi:
+     * - se le coordinate inserite non sono valide; ciò avviene se la riga o
+     *   la colonna inserita è fuori dai limiti della matrice oppure se la colonna
+     *   è tale che la funzione non è applicabile
+     * - se nelle quattro colonne a partire dalla cella [x][y] verso sinistra non
+     *   si trova un forza quattro
+     */
+    private Boolean checkHorizontal(Integer x, Integer y, GameState gameState, Integer player, Integer numberToSearch){
+
+        Integer i;
+        Integer countPieces; //contiene il numero di celle occupate da pedine di player
+        Integer countFreeCells; //contiene il numero di celle vuote
+
+        /**
+         * controllo sulle coordinate inserite:
+         * - x deve essere una riga valida, e quindi un intero tra 0 e this.rows
+         * - y deve essere una colonna valida a cui è applicabile la funzione
+         *   e quindi deve essere compreso tra 3 e this.columns
+         */
+        if(x<0 || x>=gameState.getRows() || y<3 || y>=gameState.getColumns()) return false;
+
+        // controllo forza quattro sulla riga
+        i = 0;
+        countPieces=0;
+        countFreeCells=0;
+        while(i < 4){
+            if(gameState.getCellState(x, y-i).equals(-1*player)) return false;
+            if(gameState.getCellState(x, y-i).equals(player)) countPieces++;
+            else countFreeCells++;
+            i++;
+        }
+
+        if (countPieces>=numberToSearch) return true;
+
+        return false;
+    }
+
+    /**
+     * @param x riga di partenza
+     * @param y colonna di partenza
+     * @return true se trova il forza quattro; false nei seguenti casi:
+     * - se le coordinate inserite non sono valide; ciò avviene se la riga o
+     *   la colonna inserita è fuori dai limiti della matrice oppure se la riga
+     *   (o la colonna) è tale che la funzione non è applicabile
+     * - se nelle quattro colonne a partire dalla cella [x][y] verso sinistra non
+     *   si trova un forza quattro
+     */
+    private Boolean checkDiagonal(Integer x, Integer y, GameState gameState, Integer player, Integer numberToSearch){
+        Integer i;
+        Integer countPieces; //contiene il numero di celle occupate da pedine di player
+        Integer countFreeCells; //contiene il numero di celle vuote
+
+        /**
+         * controllo sulle coordinate inserite:
+         * - x deve essere una riga valida a cui è applicabile la funzione
+         *   e quindi un intero tra 3 e this.rows
+         * - y deve essere una colonna valida a cui è applicabile la funzione
+         *   e quindi deve essere compreso tra 3 e this.columns
+         */
+        if(x<3 || x>=gameState.getRows() || y<3 || y>=gameState.getColumns()) return false;
+
+        // controllo forza quattro sulla diagonale
+        i = 0;
+        countPieces=0;
+        countFreeCells=0;
+        while(i < 4){
+            if(gameState.getCellState(x-i, y-i).equals(-1*player)) return false;
+            if(gameState.getCellState(x-i, y-i).equals(player)) countPieces++;
+            else countFreeCells++;
+            i++;
+        }
+
+        if (countPieces>=numberToSearch) return true;
+
+        return false;
+    }
+
+    /**
+     * @param x riga di partenza
+     * @param y colonna di partenza
+     * @return true se trova il forza quattro; false nei seguenti casi:
+     * - se le coordinate inserite non sono valide; ciò avviene se la riga o
+     *   la colonna inserita è fuori dai limiti della matrice oppure se la riga
+     *   (o colonna) inserita è tale che la funzione non è applicabile.
+     * - se nelle quattro colonne a partire dalla cella [x][y] verso sinistra
+     *   e verso l'alto non si trova un forza quattro
+     */
+    private Boolean checkAntiDiagonal(Integer x, Integer y, GameState gameState, Integer player, Integer numberToSearch){
+        Integer i;
+        Integer countPieces; //contiene il numero di celle occupate da pedine di player
+        Integer countFreeCells; //contiene il numero di celle vuote
+
+        /**
+         * controllo sulle coordinate inserite:
+         * - x deve essere una riga valida a cui è applicabile la funzione
+         *   e quindi un intero tra 0 e this.rows-3
+         * - y deve essere una colonna valida a cui è applicabile la funzione
+         *   e quindi deve essere compreso tra 3 e this.columns
+         */
+        if(x<0 || x>=gameState.getRows()-3 || y<3 || y>=gameState.getColumns()) return false;
+
+        // controllo forza quattro sull'antidiagonale
+                i = 0;
+        countPieces=0;
+        countFreeCells=0;
+        while(i < 4){
+            if(gameState.getCellState(x+i, y-i).equals(-1*player)) return false;
+            if(gameState.getCellState(x+i, y-i).equals(player)) countPieces++;
+            else countFreeCells++;
+            i++;
+        }
+
+        if (countPieces>=numberToSearch) return true;
+
+        return false;
+    }
+
+
+    /**
+     * @param x riga di partenza
+     * @param y colonna di partenza
+     * @return true se trova il forza quattro; false nei seguenti casi:
+     * - se le coordinate inserite non sono valide; ciò avviene se la riga o
+     *   la colonna inserita è fuori dai limiti della matrice oppure se la riga
+     *   è tale che la funzione non è applicabile
+     * - se nelle quattro colonne a partire dalla cella [x][y] verso il basso non
+     *   si trova un forza quattro
+     */
+    private Boolean checkVertical(Integer x, Integer y, GameState gameState, Integer player, Integer numberToSearch){
+        Integer i;
+        Integer countPieces;
+        Integer countFreeCells;
+        /**
+         * controllo sulle coordinate inserite:
+         * - x deve essere una riga valida a cui è applicabile la funzione
+         *   e quindi un intero tra 3 e this.rows
+         * - y deve essere una colonna valida, e quindi deve essere compreso tra
+         *   0 e this.columns
+         */
+        if(x<3 || x>=gameState.getRows() || y<0 || y>=gameState.getColumns()) return false;
+
+        // controllo forza quattro sulla colonna
+        if(gameState.getCellState(x-3, y).equals(0)) return false;
+        if(gameState.getCellState(x-3, y).equals(-1*player)) return false;
+
+        i = 2;
+        countPieces=1;
+        countFreeCells=0;
+
+        while(i >= 0){
+            if(gameState.getCellState(x-i, y).equals(-1*player)) return false;
+            if(gameState.getCellState(x-i, y).equals(player)) countPieces++;
+            else return true;
+            i--;
+        }
+
+        if (countPieces>=numberToSearch) return true;
+
         return false;
     }
 

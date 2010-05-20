@@ -14,7 +14,7 @@ package connectFour;
  */
 public class MinMaxPlayer implements AIPlayerInterface {
 
-    private final Integer maxUtilityValue = 150;
+    private final Integer maxUtilityValue = 1000;
     private Integer playerId;
     private Heuristic heuristic = new Heuristic();
     private Integer horizon = 0;
