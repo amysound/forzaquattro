@@ -14,7 +14,7 @@ package connectFour;
  */
 public class MinMaxPlayer implements AIPlayerInterface {
 
-    private final Integer maxUtilityValue = 100;
+    private final Integer maxUtilityValue = 150;
     private Integer playerId;
     private Heuristic heuristic = new Heuristic();
     private Integer horizon = 0;
@@ -80,7 +80,7 @@ public class MinMaxPlayer implements AIPlayerInterface {
          * CONTROLLO SULL'ORIZZONTE: se abbiamo raggiunto l'orizzonte massimo
          * valutiamo la funzione euristica
          */
-        if(horizon<=0)return new ValueStatePair(heuristic.calculateHeuristic(gameState),gameState);
+        if(horizon<=0)return new ValueStatePair(this.playerId*heuristic.calculateHeuristic(gameState),gameState);
        
         // calcolare il massimo degli stati successori e ritornarlo in output
 
@@ -133,7 +133,7 @@ public class MinMaxPlayer implements AIPlayerInterface {
          * CONTROLLO SULL'ORIZZONTE: se abbiamo raggiunto l'orizzonte massimo
          * valutiamo la funzione euristica
          */
-        if(horizon<=0)return new ValueStatePair(heuristic.calculateHeuristic(gameState),gameState);
+        if(horizon<=0)return new ValueStatePair(this.playerId*heuristic.calculateHeuristic(gameState),gameState);
 
         //calcolare il minimo degli stati successori e ritornarlo in output
 

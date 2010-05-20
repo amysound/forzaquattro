@@ -139,57 +139,57 @@ public class GameState implements Cloneable{
      * @return true se la mossa ha determinato una vittoria; false altrimenti
      */
     private Boolean hasWin2(Integer row, Integer column){
-        Integer actualPlayer=this.board[row][column];
+        Integer actualPlayer=this.getBoard()[row][column];
         Integer i;
 
         if(column<this.columns-3){
             //controlla a destra sulla riga
             i = 1;
-            while(i <= 3 && this.board[row][i+column].equals(actualPlayer)) i++;
+            while(i <= 3 && this.getBoard()[row][i+column].equals(actualPlayer)) i++;
             if (i.equals(4)) return true;
 
             if(row<this.rows-3){
                 //controlla in diagonale a destra in alto
                 i = 1;
-                while(i <= 3 && this.board[i+row][i+column].equals(actualPlayer)) i++;
+                while(i <= 3 && this.getBoard()[i+row][i+column].equals(actualPlayer)) i++;
                 if (i.equals(4)) return true;
             }
             if(row>2){
                 //controlla in diagonale a destra in basso
                 i = 1;
-                while(i <= 3 && this.board[row-i][i+column].equals(actualPlayer)) i++;
+                while(i <= 3 && this.getBoard()[row-i][i+column].equals(actualPlayer)) i++;
                 if (i.equals(4)) return true;
             }
         }
         if(column>2){
             //controlla a sinistra sulla riga
             i = 1;
-            while(i <= 3 && this.board[row][column-i].equals(actualPlayer)) i++;
+            while(i <= 3 && this.getBoard()[row][column-i].equals(actualPlayer)) i++;
             if (i.equals(4)) return true;
 
             if(row<this.rows-3){
                 //controlla in diagonale a sinistra in alto
                 i = 1;
-                while(i <= 3 && this.board[i+row][column-i].equals(actualPlayer)) i++;
+                while(i <= 3 && this.getBoard()[i+row][column-i].equals(actualPlayer)) i++;
                 if (i.equals(4)) return true;
             }
             if(row>2){
                 //controlla in diagonale a sinistra in basso
                 i = 1;
-                while(i <= 3 && this.board[row-i][column-i].equals(actualPlayer)) i++;
+                while(i <= 3 && this.getBoard()[row-i][column-i].equals(actualPlayer)) i++;
                 if (i.equals(4)) return true;
             }
         }
         if(row<this.rows-3){
             //controlla in alto sulla colonna
             i = 1;
-            while(i <= 3 && this.board[i+row][column].equals(actualPlayer)) i++;
+            while(i <= 3 && this.getBoard()[i+row][column].equals(actualPlayer)) i++;
             if (i.equals(4)) return true;
         }
         if(row>2){
             //controlla in basso sulla colonna
             i = 1;
-            while(i <= 3 && this.board[row-i][column].equals(actualPlayer)) i++;
+            while(i <= 3 && this.getBoard()[row-i][column].equals(actualPlayer)) i++;
             if (i.equals(4)) return true;
         }
 
@@ -235,9 +235,9 @@ public class GameState implements Cloneable{
 
         //CONTROLLO VERTICALE
         if(row>2){
-            Integer actualPlayer = this.board[row][column];
+            Integer actualPlayer = this.getBoard()[row][column];
             i = 1;
-            while(i <= 3 && this.board[row-i][column].equals(actualPlayer)) i++;
+            while(i <= 3 && this.getBoard()[row-i][column].equals(actualPlayer)) i++;
             if (i.equals(4)) return true;
         }
 
@@ -307,11 +307,11 @@ public class GameState implements Cloneable{
         if(x<0 || x>=this.rows || y<3 || y>=this.columns) return false;
 
         // lettura del colore della cella inserita
-        actualPlayer = this.board[x][y];
+        actualPlayer = this.getBoard()[x][y];
 
         // controllo forza quattro sulla riga
         i = 1;
-        while(i < 4 && this.board[x][y-i].equals(actualPlayer)) i++;
+        while(i < 4 && this.getBoard()[x][y-i].equals(actualPlayer)) i++;
         if (i.equals(4)) return true;
 
         return false;
@@ -344,11 +344,11 @@ public class GameState implements Cloneable{
         if(x<3 || x>=this.rows || y<3 || y>=this.columns) return false;
 
         // lettura del colore della cella inserita
-        actualPlayer = this.board[x][y];
+        actualPlayer = this.getBoard()[x][y];
 
         // controllo forza quattro sulla diagonale
         i = 1;
-        while(i < 4 && this.board[x-i][y-i].equals(actualPlayer)) i++;
+        while(i < 4 && this.getBoard()[x-i][y-i].equals(actualPlayer)) i++;
         if (i.equals(4)) return true;
 
         return false;
@@ -381,11 +381,11 @@ public class GameState implements Cloneable{
         if(x<0 || x>=this.rows-3 || y<3 || y>=this.columns) return false;
 
         // lettura del colore della cella inserita
-        actualPlayer = this.board[x][y];
+        actualPlayer = this.getBoard()[x][y];
 
         // controllo forza quattro sull'antidiagonale
         i = 1;
-        while(i < 4 && this.board[x+i][y-i].equals(actualPlayer)) i++;
+        while(i < 4 && this.getBoard()[x+i][y-i].equals(actualPlayer)) i++;
         if (i.equals(4)) return true;
 
         return false;
@@ -418,11 +418,11 @@ public class GameState implements Cloneable{
         if(x<3 || x>=this.rows || y<0 || y>=this.columns) return false;
 
         // lettura del colore della cella inserita
-        actualPlayer = this.board[x][y];
+        actualPlayer = this.getBoard()[x][y];
 
         // controllo forza quattro sulla colonna
         i = 1;
-        while(i < 4 && this.board[x-i][y].equals(actualPlayer)) i++;
+        while(i < 4 && this.getBoard()[x-i][y].equals(actualPlayer)) i++;
         if (i.equals(4)) return true;
 
         return false;
@@ -442,13 +442,13 @@ public class GameState implements Cloneable{
 
         if(x<0 || y<0) return false;
         
-        actualPlayer = this.board[x][y];
+        actualPlayer = this.getBoard()[x][y];
 //        System.out.println("CELLA LETTA (ACTUALPLAYER) ["+x+";"+y+"] = "+actualPlayer);
         i = 1;
         while(i <= 3 &&
               x+(i*dirX)>=0 &&
               y+(i*dirY)>=0 &&
-              this.board[x+(i*dirX)][y+(i*dirY)].equals(actualPlayer))
+              this.getBoard()[x+(i*dirX)][y+(i*dirY)].equals(actualPlayer))
         {
 //            System.out.println("CELLA LETTA ["+(x+(i*dirX))+";"+(y+(i*dirY))+"] = "+this.board[x+(i*dirX)][y+(i*dirY)]);
             i++;
@@ -465,7 +465,7 @@ public class GameState implements Cloneable{
      * @return lo stato della cella board[row][column]
      */
     public Integer getCellState(Integer row, Integer column){
-        return this.board[row][column];
+        return this.getBoard()[row][column];
     }
 
     /**
@@ -484,7 +484,7 @@ public class GameState implements Cloneable{
         String gameState = "\nSTATO DEL GIOCO\n";
         for(Integer i = 0; i < this.rows; i++){
             for(Integer j = 0; j < this.columns; j++){
-               gameState+="["+this.board[i][j]+"]";
+               gameState+="["+this.getBoard()[i][j]+"]";
             }
             gameState+="\n";
         }
@@ -516,6 +516,13 @@ public class GameState implements Cloneable{
             }
         }
         return gs;
+    }
+
+    /**
+     * @return the board
+     */
+    public Integer[][] getBoard() {
+        return board;
     }
 
 }
