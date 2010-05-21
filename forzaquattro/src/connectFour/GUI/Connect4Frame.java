@@ -21,7 +21,9 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import connectFour.ControllerInterface;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JDialog;
+import javax.swing.JMenuItem;
 
 
 /**
@@ -81,6 +83,7 @@ public class Connect4Frame extends javax.swing.JFrame implements ActionListener 
         //registrazione all'evento del bottone start game
         menu.registerToStartButton(this);
         restartMenuItem.addActionListener(this);
+        enableNextButton.addActionListener(this);
         
     }
 
@@ -97,6 +100,8 @@ public class Connect4Frame extends javax.swing.JFrame implements ActionListener 
         jMenuBar1 = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         restartMenuItem = new javax.swing.JMenuItem();
+        nextButtonMenu = new javax.swing.JMenu();
+        enableNextButton = new javax.swing.JCheckBoxMenuItem();
         helpMenu = new javax.swing.JMenu();
         aboutMenuItem = new javax.swing.JMenuItem();
 
@@ -115,6 +120,15 @@ public class Connect4Frame extends javax.swing.JFrame implements ActionListener 
         fileMenu.add(restartMenuItem);
 
         jMenuBar1.add(fileMenu);
+
+        nextButtonMenu.setText("Pulsante Next");
+
+        enableNextButton.setText("Abilita");
+        enableNextButton.setToolTipText("Spunta per abilitare il pulsante Next");
+        enableNextButton.setName("enableNextButton"); // NOI18N
+        nextButtonMenu.add(enableNextButton);
+
+        jMenuBar1.add(nextButtonMenu);
 
         helpMenu.setText("?");
 
@@ -146,9 +160,11 @@ public class Connect4Frame extends javax.swing.JFrame implements ActionListener 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel Title;
     private javax.swing.JMenuItem aboutMenuItem;
+    private javax.swing.JCheckBoxMenuItem enableNextButton;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenu helpMenu;
     private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JMenu nextButtonMenu;
     private javax.swing.JMenuItem restartMenuItem;
     // End of variables declaration//GEN-END:variables
 
@@ -162,9 +178,17 @@ public class Connect4Frame extends javax.swing.JFrame implements ActionListener 
             Component source=(Component) e.getSource();
             if(source.getName().equals("restart")){
                 this.reset();
-            }else
-            if(source.getName().equals("about")){
+            }else if(source.getName().equals("about")){
+
                 aboutDialog.setVisible(true);
+
+            }
+            else if(source.getName().equals("enableNextButton")){
+
+                JCheckBoxMenuItem item=(JCheckBoxMenuItem) source;
+                board.setUsesNextButton(item.isSelected());
+             
+
             }else{
                 startGame();
             }
@@ -180,6 +204,8 @@ public class Connect4Frame extends javax.swing.JFrame implements ActionListener 
         menu.setEnableInitGame(false);
         board.setYellowType(yellowPlayer);
         board.setRedType(redPlayer);
+        board.setUsesNextButton(enableNextButton.isSelected());
+        controller.initGame(yellowPlayer, menu.getYellowPlayerHorizont(), redPlayer, menu.getRedPlayerHorizont(), statistic);
         if (yellowPlayer.equals(ControllerInterface.human) && !redPlayer.equals(ControllerInterface.human)) {
             board.enableHumanVsCpuButton();
             statistic.setEnableRed(true);
@@ -187,6 +213,8 @@ public class Connect4Frame extends javax.swing.JFrame implements ActionListener 
         if (!yellowPlayer.equals(ControllerInterface.human) && redPlayer.equals(ControllerInterface.human)) {
             board.enableCpuVsHumanButton();
             statistic.setEnableYellow(true);
+            if (!enableNextButton.isSelected())
+                board.actionPerformed(null);
         }
         if (!yellowPlayer.equals(ControllerInterface.human) && !redPlayer.equals(ControllerInterface.human)) {
             board.enableCpuVsCpuButton();
@@ -196,7 +224,7 @@ public class Connect4Frame extends javax.swing.JFrame implements ActionListener 
         if(yellowPlayer.equals(ControllerInterface.human) && redPlayer.equals(ControllerInterface.human))
             board.enalbeHumanVsHumanButton();
         
-        controller.initGame(yellowPlayer, menu.getYellowPlayerHorizont(), redPlayer, menu.getRedPlayerHorizont(), statistic);
+        
        
     }
 

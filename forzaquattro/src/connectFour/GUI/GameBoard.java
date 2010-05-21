@@ -17,6 +17,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -111,12 +113,19 @@ class Move extends JLabel{
 public class GameBoard extends javax.swing.JPanel implements MouseListener, ActionListener {
 
     private ControllerInterface controller;
+
+    /**
+     * Flag utilizzata per indicare se utilizzare o no il pulsante next,
+     * quando la flag è false il pulsante resterà disattivato, quando è true
+     * si attiverà
+     */
+    private boolean usesNextButton=false;
    
     private final ImageIcon red=new ImageIcon(getClass().getResource("/img/red.jpg"));
     private final ImageIcon yellow=new ImageIcon(getClass().getResource("/img/yellow.jpg"));
 
-    private String yellowType;
-    private String redType;
+    private String yellowType="";
+    private String redType="";
 
     /**
      *contiene la matrice del campo da gioco,8 righe (verticale) 
@@ -126,6 +135,11 @@ public class GameBoard extends javax.swing.JPanel implements MouseListener, Acti
     
     private Move[] moves= new Move[7];
 
+    /**
+     * Pulsante next, di default è disabilitato per le partite umano contro cpu
+     * è disabilitato sempre per le partite umano contro umano, è abilitato
+     * sempre per le partite cpu contro cpu
+     */
     private JButton next= new JButton("next");
 
     private JLabel turnLabel=new JLabel("Tocca al Giocatore Giallo");
@@ -280,12 +294,14 @@ public class GameBoard extends javax.swing.JPanel implements MouseListener, Acti
      */
      public void enableHumanVsCpuButton(){
             enabledHumanButton(true);
-            enabledCpuButton(false);
+            if(usesNextButton)
+                enabledCpuButton(false);
       }
 
       public void enableCpuVsHumanButton(){
             enabledHumanButton(false);
-            enabledCpuButton(true);
+            if(usesNextButton)
+                enabledCpuButton(true);
       }
 
       public void enableCpuVsCpuButton(){
@@ -322,7 +338,8 @@ public class GameBoard extends javax.swing.JPanel implements MouseListener, Acti
         if (yellowType.equals(ControllerInterface.human)) {
             enabledHumanButton(true);
         } else {
-            enabledCpuButton(true);
+            if(usesNextButton)
+                enabledCpuButton(true);
         }
     }
     
@@ -335,7 +352,8 @@ public class GameBoard extends javax.swing.JPanel implements MouseListener, Acti
         if (redType.equals(ControllerInterface.human)) {
             enabledHumanButton(true);
         } else {
-            enabledCpuButton(true);
+            if(usesNextButton)
+                enabledCpuButton(true);
         }
     }
 
@@ -349,16 +367,30 @@ public class GameBoard extends javax.swing.JPanel implements MouseListener, Acti
         GameState s;
 
         if(buttonPressed.isEnabled()){
+
             setEnable(false);
 
             int col = doNextHumanMoveOnGui(buttonPressed);
-            
+
             s = doNextHumanMoveOnCore(col);
 
-            afterMoveActions(s);
+            //se la partita non è finita
+            if(!afterMoveActions(s)){
+                //se il pulsante next è disabilitato devi fare la mossa successiva
+                if(!usesNextButton){
+                    //Se uno dei due giocatori non è umano
+                    if(!yellowType.equals(ControllerInterface.human) || (!redType.equals(ControllerInterface.human))){
+                        //Effettua automaticametne la mossa della cpu
+                        s = doNextCpuMoveOnCore();
 
-                
-        
+                        doNextCpuMoveOnGui(s);
+
+                        afterMoveActions(s);
+                    }
+                    
+                }
+            }
+
         }
     }
 
@@ -377,15 +409,20 @@ public class GameBoard extends javax.swing.JPanel implements MouseListener, Acti
      * Controlla se lo stato è terminale, se è così fine partita
      * altrimenti cambia turno
      * @param s
+     * @return true se la partita è finita
      */
-    private void afterMoveActions(GameState s) {
+    private boolean afterMoveActions(GameState s) {
         if (s.isTerminal()) {
             endDialog.setWinner(getWinnerAsString(s.getWinner()));
+            
+            
+
             endDialog.setVisible(true);
             this.setEnable(false);
         } else {
             changeTurn();
         }
+        return s.isTerminal();
     }
 
     /**
@@ -506,6 +543,19 @@ public class GameBoard extends javax.swing.JPanel implements MouseListener, Acti
             s = controller.calculateAIMove(ControllerInterface.red);
         }
         return s;
+    }
+
+    /**
+     * @param usesNextButton the usesNextButton to set
+     */
+    public void setUsesNextButton(boolean usesNextButton) {
+        if(yellowType.equals(ControllerInterface.human) && (redType.equals(ControllerInterface.human)))
+            this.usesNextButton = false;
+        else
+            if(!yellowType.equals(ControllerInterface.human) && (!redType.equals(ControllerInterface.human)))
+                this.usesNextButton = true;
+            else
+                this.usesNextButton=usesNextButton;
     }
 
     

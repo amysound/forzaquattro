@@ -17,6 +17,20 @@
             </MenuItem>
           </SubComponents>
         </Menu>
+        <Menu class="javax.swing.JMenu" name="nextButtonMenu">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Pulsante Next"/>
+          </Properties>
+          <SubComponents>
+            <MenuItem class="javax.swing.JCheckBoxMenuItem" name="enableNextButton">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Abilita"/>
+                <Property name="toolTipText" type="java.lang.String" value="Spunta per abilitare il pulsante Next"/>
+                <Property name="name" type="java.lang.String" value="enableNextButton" noResource="true"/>
+              </Properties>
+            </MenuItem>
+          </SubComponents>
+        </Menu>
         <Menu class="javax.swing.JMenu" name="helpMenu">
           <Properties>
             <Property name="text" type="java.lang.String" value="?"/>
