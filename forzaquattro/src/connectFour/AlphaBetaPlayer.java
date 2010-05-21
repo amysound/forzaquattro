@@ -14,7 +14,6 @@ package connectFour;
 
 public class AlphaBetaPlayer implements AIPlayerInterface {
 		
-    private final Integer maxUtilityValue = 1000;
     private Integer playerId;
     private Heuristic heuristic = new Heuristic();
     private Integer horizon = 0;

@@ -14,6 +14,9 @@ package connectFour;
 
 public class Heuristic {
     private Integer numberToSearch=1;
+    private final Integer weightOne = 1;
+    private final Integer weightTwo = 5;
+    private final Integer weightThree = 10;
     Integer c=0;
     /**
      * Constructor.
@@ -30,7 +33,10 @@ public class Heuristic {
      * @return il valore della funzione euristica
      */
     public Integer calculateHeuristic(GameState gameState){
-        return countConnectHeuristic(gameState);
+//    c++;
+        Integer temp = countConnectHeuristic(gameState);
+//        System.out.println(c+": "+temp);
+        return temp;
     }
 
     private Integer naiveHeuristic(GameState gameState){
@@ -56,10 +62,7 @@ public class Heuristic {
      * @return
      */
     private Integer countConnectThreeHeuristic(GameState gameState){
-        //c++;
-        Integer temp = countConnectThree(gameState, ControllerInterface.yellow)-countConnectThree(gameState, ControllerInterface.red);
-      //  System.out.println(c+": "+temp);
-        return temp;
+        return countConnectThree(gameState, ControllerInterface.yellow)-countConnectThree(gameState, ControllerInterface.red);
     }
 
 
@@ -79,6 +82,8 @@ public class Heuristic {
 
         Integer heuristicValue;
 
+        Integer player;
+
         yellowOne = countConnect(gameState, ControllerInterface.yellow, 1);
         yellowTwo = countConnect(gameState, ControllerInterface.yellow, 2);
         yellowThree = countConnect(gameState, ControllerInterface.yellow, 3);
@@ -88,7 +93,26 @@ public class Heuristic {
         redTwo = countConnect(gameState, ControllerInterface.red, 2);
         redThree = countConnect(gameState, ControllerInterface.red, 3);
       //  System.out.println(c+": "+temp);
-        heuristicValue = yellowOne+(2*yellowTwo)+(3*yellowThree)-(redOne+(2*redTwo)+(3*redThree));
+
+//        System.out.println("yellowOne = "+yellowOne);
+//        System.out.println("yellowTwo = "+yellowTwo);
+//        System.out.println("yellowThree = "+yellowThree);
+//
+//
+//        System.out.println("redOne = "+redOne);
+//        System.out.println("redTwo = "+redTwo);
+//        System.out.println("redThree = "+redThree);
+        //casi particolari
+//        player=(-1)*gameState.getPlayer();
+//
+//        if(player.equals(ControllerInterface.yellow) && yellowThree>0) return AIPlayerInterface.maxUtilityValue-1;
+//        if(player.equals(ControllerInterface.red) && redThree>0) return -1*(AIPlayerInterface.maxUtilityValue-1);
+//
+//        if(player.equals(ControllerInterface.red) && yellowThree>1) return AIPlayerInterface.maxUtilityValue-1;
+//        if(player.equals(ControllerInterface.yellow) && redThree>1) return -1*(AIPlayerInterface.maxUtilityValue-1);
+
+        heuristicValue = (weightOne*yellowOne)+(weightTwo*yellowTwo)+(weightThree*yellowThree)
+                         -((weightOne*redOne)+(weightTwo*redTwo)+(weightThree*redThree));
 
         return heuristicValue;
     }
@@ -372,9 +396,7 @@ public class Heuristic {
             if(gameState.getCellState(x, y-i).equals(player)) countPieces++;
             else countFreeCells++;
             i++;
-        }
-
-        if (countPieces>=numberToSearch) return true;
+        }if (countPieces.equals(numberToSearch)) return true;
 
         return false;
     }
@@ -414,7 +436,7 @@ public class Heuristic {
             i++;
         }
 
-        if (countPieces>=numberToSearch) return true;
+        if (countPieces.equals(numberToSearch)) return true;
 
         return false;
     }
@@ -454,7 +476,7 @@ public class Heuristic {
             i++;
         }
 
-        if (countPieces>=numberToSearch) return true;
+        if (countPieces.equals(numberToSearch)) return true;
 
         return false;
     }
@@ -494,11 +516,11 @@ public class Heuristic {
         while(i >= 0){
             if(gameState.getCellState(x-i, y).equals(-1*player)) return false;
             if(gameState.getCellState(x-i, y).equals(player)) countPieces++;
-            else return true;
+            else
+                if (countPieces.equals(numberToSearch)) return true;
+                else return false;
             i--;
         }
-
-        if (countPieces>=numberToSearch) return true;
 
         return false;
     }

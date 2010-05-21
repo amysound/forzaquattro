@@ -17,7 +17,7 @@ package connectFour;
 
 public  interface AIPlayerInterface 
 {
-
+    public static final Integer maxUtilityValue = 2000;
     /**
      *  calcolo della prossima mossa
      * @param gameState stato attuale del gioco
