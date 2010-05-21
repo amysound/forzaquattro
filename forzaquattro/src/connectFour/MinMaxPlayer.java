@@ -1,4 +1,7 @@
 package connectFour;
+
+import java.util.Random;
+
 /**
  * MinMaxPlayer.java
  *
@@ -36,6 +39,25 @@ public class MinMaxPlayer implements AIPlayerInterface {
             return examinatedNodeNumber;
     }
 
+//    public static void main(String[] arg){
+//        MinMaxPlayer m = new MinMaxPlayer(1);
+//        for(Integer i : m.randomMoves(7)) System.out.print(i+";");
+//        System.out.println("");
+//        for(Integer i : m.randomMoves(7)) System.out.print(i+";");
+//        System.out.println("");
+//        for(Integer i : m.randomMoves(7)) System.out.print(i+";");
+//        System.out.println("");
+//        for(Integer i : m.randomMoves(7)) System.out.print(i+";");
+//        System.out.println("");
+//        for(Integer i : m.randomMoves(7)) System.out.print(i+";");
+//        System.out.println("");
+//        for(Integer i : m.randomMoves(7)) System.out.print(i+";");
+//        System.out.println("");
+//        for(Integer i : m.randomMoves(7)) System.out.print(i+";");
+//        System.out.println("");
+//
+//
+//    }
     /**
      * metodo che determina la prossima mossa da eseguire e restituisce il nuovo stato
      * @param gameState Stato attuale del gioco
@@ -57,6 +79,29 @@ public class MinMaxPlayer implements AIPlayerInterface {
     public GameState nextMove(GameState gameState, Integer horizon) {
         ValueStatePair maxValueStatePair = maxValue(gameState, horizon);
         return maxValueStatePair.getState();
+    }
+
+
+    public Integer[] randomMoves(Integer dim){
+        Random r=new Random();
+        Integer[] nextMoves = new Integer[dim];
+        Integer j=0;
+        Integer temp;
+        for(j=0;j<dim;j++)nextMoves[j]=j;
+//        System.out.println("ORDINATO");
+//        for(j=0;j<n;j++) System.out.print(nextMoves[j]+"-");
+        j=0;
+        while(j<dim){
+            Integer move=r.nextInt(dim-j);
+            //scambia
+            temp=nextMoves[move];
+            nextMoves[move]=nextMoves[dim-j-1];
+            nextMoves[dim-j-1]=temp;
+            j++;
+        }
+//        System.out.println("\nCASUALE");
+//        for(j=0;j<n;j++) System.out.print(nextMoves[j]+"-");
+        return nextMoves;
     }
 
     /**
@@ -88,7 +133,7 @@ public class MinMaxPlayer implements AIPlayerInterface {
         GameState maxState = null;
 
         //ricerca dello stato con maxValue massimo
-        for(Integer i=0;i<gameState.getColumns();i++){
+        for(Integer i : randomMoves(gameState.getColumns())){
             try{
                 GameState succ = gameState.clone();
 
@@ -141,7 +186,7 @@ public class MinMaxPlayer implements AIPlayerInterface {
         GameState minState=null;
 
         //ricerca dello stato con minValue minimo
-        for(Integer i=0;i<gameState.getColumns();i++){
+        for(Integer i : randomMoves(gameState.getColumns())){
             try{
                 GameState succ = gameState.clone();
 

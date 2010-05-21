@@ -17,7 +17,7 @@ public class Heuristic {
     private final Integer weightOne = 1;
     private final Integer weightTwo = 5;
     private final Integer weightThree = 10;
-    Integer c=0;
+    private Integer c=0;
     /**
      * Constructor.
      */
@@ -35,6 +35,7 @@ public class Heuristic {
     public Integer calculateHeuristic(GameState gameState){
 //    c++;
         Integer temp = countConnectHeuristic(gameState);
+//        Integer temp = naiveHeuristic(gameState);
 //        System.out.println(c+": "+temp);
         return temp;
     }
@@ -341,12 +342,16 @@ public class Heuristic {
         Integer row;
         Integer column;
         Integer connect;
-
+        Boolean whiteRow;
+        Boolean exitWhiteRow;
+        whiteRow = false;
         connect=0;
-        for(row=0;row<gameState.getRows();row++){
+        row=0;
+        while(row<gameState.getRows() && !whiteRow){
 
             for(column=0;column<gameState.getColumns();column++){
                 //CONTROLLO ORIZZONTALE
+
                 if(checkHorizontal(row,column, gameState, player, numberToSearch)) connect++;
 
                 //CONTROLLO DIAGONALE
@@ -358,6 +363,17 @@ public class Heuristic {
                 //CONTROLLO VERTICALE
                 if(checkVertical(row,column, gameState, player, numberToSearch)) connect++;
             }
+
+            row++;
+            column=0;
+            exitWhiteRow=false;
+            
+            while (row<gameState.getRows() && column<gameState.getColumns() && !exitWhiteRow)
+                if(!gameState.getCellState(row, column).equals(0)) exitWhiteRow=true;
+                else column++;
+
+            whiteRow=column.equals(gameState.getColumns());
+
         }
         return connect;
     }
@@ -423,15 +439,15 @@ public class Heuristic {
          * - y deve essere una colonna valida a cui è applicabile la funzione
          *   e quindi deve essere compreso tra 3 e this.columns
          */
-        if(x<3 || x>=gameState.getRows() || y<3 || y>=gameState.getColumns()) return false;
+        if(x<3 || x>=gameState.getRows()-3 || y<0 || y>=gameState.getColumns()-3) return false;
 
         // controllo forza quattro sulla diagonale
         i = 0;
         countPieces=0;
         countFreeCells=0;
         while(i < 4){
-            if(gameState.getCellState(x-i, y-i).equals(-1*player)) return false;
-            if(gameState.getCellState(x-i, y-i).equals(player)) countPieces++;
+            if(gameState.getCellState(x+i, y+i).equals(-1*player)) return false;
+            if(gameState.getCellState(x+i, y+i).equals(player)) countPieces++;
             else countFreeCells++;
             i++;
         }
@@ -503,23 +519,23 @@ public class Heuristic {
          * - y deve essere una colonna valida, e quindi deve essere compreso tra
          *   0 e this.columns
          */
-        if(x<3 || x>=gameState.getRows() || y<0 || y>=gameState.getColumns()) return false;
+        if(x<0 || x>=gameState.getRows()-3 || y<0 || y>=gameState.getColumns()) return false;
 
         // controllo forza quattro sulla colonna
-        if(gameState.getCellState(x-3, y).equals(0)) return false;
-        if(gameState.getCellState(x-3, y).equals(-1*player)) return false;
+        if(gameState.getCellState(x, y).equals(0)) return false;
+        if(gameState.getCellState(x, y).equals(-1*player)) return false;
 
-        i = 2;
+        i = 1;
         countPieces=1;
         countFreeCells=0;
 
-        while(i >= 0){
-            if(gameState.getCellState(x-i, y).equals(-1*player)) return false;
-            if(gameState.getCellState(x-i, y).equals(player)) countPieces++;
+        while(i < 4){
+            if(gameState.getCellState(x+i, y).equals(-1*player)) return false;
+            if(gameState.getCellState(x+i, y).equals(player)) countPieces++;
             else
                 if (countPieces.equals(numberToSearch)) return true;
                 else return false;
-            i--;
+            i++;
         }
 
         return false;
