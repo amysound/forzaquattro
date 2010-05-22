@@ -439,7 +439,7 @@ public class Heuristic {
          * - y deve essere una colonna valida a cui è applicabile la funzione
          *   e quindi deve essere compreso tra 3 e this.columns
          */
-        if(x<3 || x>=gameState.getRows()-3 || y<0 || y>=gameState.getColumns()-3) return false;
+        if(x<0 || x>=gameState.getRows()-3 || y<0 || y>=gameState.getColumns()-3) return false;
 
         // controllo forza quattro sulla diagonale
         i = 0;
