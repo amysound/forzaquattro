@@ -1,3 +1,17 @@
+
+//TODO: OTTIMIZZARE I THREAD!!!!!!!!
+//TODO: OTTIMIZZARE I THREAD!!!!!!!!
+//TODO: OTTIMIZZARE I THREAD!!!!!!!!
+//TODO: OTTIMIZZARE I THREAD!!!!!!!!
+//TODO: OTTIMIZZARE I THREAD!!!!!!!!
+//TODO: OTTIMIZZARE I THREAD!!!!!!!!
+//TODO: OTTIMIZZARE I THREAD!!!!!!!!
+//TODO: OTTIMIZZARE I THREAD!!!!!!!!
+//TODO: OTTIMIZZARE I THREAD!!!!!!!!
+//TODO: OTTIMIZZARE I THREAD!!!!!!!!
+//TODO: OTTIMIZZARE I THREAD!!!!!!!!
+//TODO: OTTIMIZZARE I THREAD!!!!!!!!
+
 /*
  * GameBoard.java
  * E' la classe che costruisce il tavolo da gioco
@@ -12,6 +26,7 @@ import connectFour.ControllerInterface;
 import connectFour.GameState;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Rectangle;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -369,27 +384,47 @@ public class GameBoard extends javax.swing.JPanel implements MouseListener, Acti
         if(buttonPressed.isEnabled()){
 
             setEnable(false);
-
+            
             int col = doNextHumanMoveOnGui(buttonPressed);
 
             s = doNextHumanMoveOnCore(col);
+                    //se la partita non è finita
+                    if(!afterMoveActions(s)){
+                        //se il pulsante next è disabilitato devi fare la mossa successiva
+                        if(!usesNextButton){
+                            /*Creo un nuovo thread per fare in modo che l'interfaccia
+                             * si aggiorni e poi venga effettuata la mossa della
+                             * cpu
+                             */
+                            Thread threadThink=new Thread(new Runnable() {
 
-            //se la partita non è finita
-            if(!afterMoveActions(s)){
-                //se il pulsante next è disabilitato devi fare la mossa successiva
-                if(!usesNextButton){
-                    //Se uno dei due giocatori non è umano
-                    if(!yellowType.equals(ControllerInterface.human) || (!redType.equals(ControllerInterface.human))){
-                        //Effettua automaticametne la mossa della cpu
-                        s = doNextCpuMoveOnCore();
+                                public void run() {
+                                try {
+                                    Thread.sleep(250);
+                                } catch (InterruptedException ex) {
+                                    Logger.getLogger(GameBoard.class.getName()).log(Level.SEVERE, null, ex);
+                                }
+                                //Se uno dei due giocatori non è umano
+                                if(!yellowType.equals(ControllerInterface.human) || (!redType.equals(ControllerInterface.human))){
+                                    //Effettua automaticametne la mossa della cpu
+                                    GameState s = doNextCpuMoveOnCore();
 
-                        doNextCpuMoveOnGui(s);
+                                    doNextCpuMoveOnGui(s);
 
-                        afterMoveActions(s);
-                    }
-                    
-                }
+                                    afterMoveActions(s);
+                                    }
+
+
+                                }
+                            });
+
+                
+                        threadThink.start();
+                        }
             }
+
+
+            
 
         }
     }
@@ -414,7 +449,6 @@ public class GameBoard extends javax.swing.JPanel implements MouseListener, Acti
     private boolean afterMoveActions(GameState s) {
         if (s.isTerminal()) {
             endDialog.setWinner(getWinnerAsString(s.getWinner()));
-            
             
 
             endDialog.setVisible(true);
@@ -561,6 +595,15 @@ public class GameBoard extends javax.swing.JPanel implements MouseListener, Acti
     
 
 
+
+}
+
+
+class Think implements Runnable{
+
+    public void run() {
+
+    }
 
 }
 
