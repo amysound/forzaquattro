@@ -1,4 +1,7 @@
 package connectFour;
+
+import java.util.Stack;
+
 /**
  * GameState.java
  *
@@ -31,8 +34,14 @@ public class GameState implements Cloneable{
     private Integer winner;     // intero che individua il vincitore della partita;
     private Integer player;     // intero che individua il giocatore che ha effettuato l'ultima mossa
     private Integer move;       // intero che individua l'ultima mossa effettuata
+
+    private Stack<Integer> movesHistory;
     private Integer freeCells;  // numero di celle libere
 
+    private Integer[] firstFreeCellForColumn;
+
+    private Stack<HeuristicValues> heuristicValuesHistory;
+    private HeuristicValues heuristicValues;
     /**
      * Constructor.
      */
@@ -46,9 +55,13 @@ public class GameState implements Cloneable{
         setWinner(2);
         setPlayer(0);
         setMove(-1);
+        movesHistory = new Stack<Integer>();
+        heuristicValuesHistory = new Stack<HeuristicValues>();
         setFreeCells(rows*columns);
         board = new Integer[rows][columns];
+        firstFreeCellForColumn = new Integer[columns];
         initializes();
+        heuristicValues = new HeuristicValues();
     }
 
     public Integer getRows() {
@@ -87,6 +100,10 @@ public class GameState implements Cloneable{
         return move;
     }
 
+    private void setMove(Integer move) {
+        this.move = move;
+    }
+
     private void setPlayer(Integer player) {
         this.player = player;
     }
@@ -95,41 +112,89 @@ public class GameState implements Cloneable{
         return player;
     }
 
-    private void setMove(Integer move) {
-        this.move = move;
-    }
-
     /**
      * metodo per effettuare le giocate
-     * @param player intero che rappresenta il giocatore di turno
+     * @param lastPlayer intero che rappresenta il giocatore di turno
      * @param column intero che rappresenta la colonna scelta dal giocatore
      * @return true se la mossa è stata effettuata con successo, false altrimenti
      */
     public Boolean doMove(Integer player, Integer column){
-        Integer i=0;
+        Integer firstFreeRow=0;
+
         // se lo stato è terminale non sono applicabili altre mosse
         if(this.isTerminal()) return false;
 
         // cerca la riga in cui inserire la pedina nella colonna specificata
-        while(i<this.rows && !this.board[i][column].equals(0)) i++;
+        firstFreeRow=this.firstFreeCellForColumn[column];
 
         // se la colonna è già piena non è possibile effettuare la mossa desiderata
-        if(i==this.rows) return false;
+        if(firstFreeRow>=this.rows) return false;
 
         //effettua la mossa e aggiorna lo stato del gioco
-        board[i][column]=player;
+        board[firstFreeRow][column]=player;
         this.setPlayer(player);
+        movesHistory.push(this.move);
+        heuristicValuesHistory.push(new HeuristicValues());
+//        heuristicValuesHistory.push(this.heuristicValues);
         this.setMove(column);
         this.setFreeCells(this.freeCells-1);
+        this.firstFreeCellForColumn[column]=firstFreeRow+1;
 
-        /* se c'è un vincitore oppure la partita è finita in pareggioaggiorna la
+        /* se c'è un vincitore oppure la partita è finita in pareggio aggiorna la
          * variabile winner
          */
-        if(hasWin(i, column))setWinner(player);
+        if(hasWin(firstFreeRow, column))setWinner(player);
+
+        // HAS WIN CREA IL NUOVO HEURISTICVALUE E FA IL PUSH DEL VECCHIO
         else if(this.freeCells==0)setWinner(0);
 
         return true;
     }
+
+    /**
+     * annulla gli effetti dell'ultima mossa effettuata ripristinando lo stato
+     * precedente
+     * @return true se la mossa è stata effettuata con successo, false altrimenti
+     */
+    public Boolean undo(){
+        Integer i;
+        Integer lastPlayer=this.player;
+        Integer column=this.move;
+        
+        i=this.firstFreeCellForColumn[column];
+
+        //effettua la mossa e aggiorna lo stato del gioco
+//        if(firstFreeRow<=0)System.out.println("firstFreeRow = "+firstFreeRow+" - column = "+column+" - STATO:\n"+this);
+        board[i-1][column]=0;
+        this.setPlayer(-1*lastPlayer);
+        this.setMove(this.movesHistory.pop());
+        this.heuristicValues=this.heuristicValuesHistory.pop();
+        this.setFreeCells(this.freeCells+1);
+        this.firstFreeCellForColumn[column]=i-1;
+        setWinner(2);
+
+        //aggiornare variabili eventuali per euristiche
+        return true;
+    }
+
+//    public static void main(String[] args){
+//        GameState gs=new GameState();
+//
+//        gs.doMove(1,3);
+//        gs.doMove(-1,3);
+//        gs.doMove(1,3);
+//        gs.doMove(-1,3);
+//        gs.doMove(1,3);
+//        gs.doMove(-1,3);
+//        gs.doMove(1,3);
+//        gs.doMove(-1,3);
+//        gs.doMove(1,3);
+//        gs.doMove(-1,3);
+//        System.out.println(gs);
+//        gs.undo();
+//        System.out.println(gs);
+//
+//    }
 
     /**
      * @deprecated
@@ -241,6 +306,30 @@ public class GameState implements Cloneable{
             if (i.equals(4)) return true;
         }
 
+        return false;
+    }
+
+    /**
+     * metodo che verifica se la mossa effettuata ha determinato una vittoria
+     * inoltre aggiorna i valori dell'euristica. Se lo stato raggiunto è
+     * uno stato te
+     * @param row riga della cella in cui è stata inserita l'ultima pedina
+     * @param column colonna della cella in cui è stata inserita l'ultima pedina
+     * @return true se la mossa ha determinato una vittoria; false altrimenti
+     */
+    private Boolean hasWinWithEuristicValues(Integer row, Integer column){
+        Integer player = getCellState(row, column);
+        Integer playerCells = 0;
+        Integer opponentCells = 0;
+
+
+        return false;
+    }
+
+    /**
+     * metod
+     */
+    private Boolean checkHorizontalWinWithEuristicValues(Integer row, Integer column){
         return false;
     }
 
@@ -450,7 +539,7 @@ public class GameState implements Cloneable{
               y+(i*dirY)>=0 &&
               this.getBoard()[x+(i*dirX)][y+(i*dirY)].equals(actualPlayer))
         {
-//            System.out.println("CELLA LETTA ["+(x+(i*dirX))+";"+(y+(i*dirY))+"] = "+this.board[x+(i*dirX)][y+(i*dirY)]);
+//            System.out.println("CELLA LETTA ["+(x+(firstFreeRow*dirX))+";"+(y+(firstFreeRow*dirY))+"] = "+this.board[x+(firstFreeRow*dirX)][y+(firstFreeRow*dirY)]);
             i++;
         }
 
@@ -477,6 +566,9 @@ public class GameState implements Cloneable{
                 this.board[i][j] = 0;
             }
         }
+        for(Integer j = 0; j < this.columns; j++){
+            this.firstFreeCellForColumn[j] = 0;
+        }
     }
 
     @Override
@@ -491,18 +583,6 @@ public class GameState implements Cloneable{
         return gameState;
     }
 
-    private void setFreeCells(Integer freeCells) {
-            this.freeCells = freeCells;
-    }
-
-    private Integer getFreeCells() {
-            return freeCells;
-    }
-
-    public Boolean isTerminal(){
-        return(this.winner!=2);
-    }
-
     @Override
     protected GameState clone() throws CloneNotSupportedException {
         GameState gs = new GameState(this.getRows(),this.getColumns());
@@ -515,14 +595,140 @@ public class GameState implements Cloneable{
                 gs.board[i][j] = this.getCellState(i, j);
             }
         }
+        for(Integer j = 0; j < this.columns; j++){
+            gs.firstFreeCellForColumn[j] = this.firstFreeCellForColumn[j];
+        }
         return gs;
+    }
+
+    private void setFreeCells(Integer freeCells) {
+        this.freeCells = freeCells;
+    }
+
+    private Integer getFreeCells() {
+        return freeCells;
+    }
+
+    public Boolean isTerminal(){
+        return(this.winner!=2);
     }
 
     /**
      * @return the board
      */
-    public Integer[][] getBoard() {
+    private Integer[][] getBoard() {
         return board;
     }
 
+}
+
+class HeuristicValues implements Cloneable {
+    private Integer yellowOne;
+    private Integer yellowTwo;
+    private Integer yellowThree;
+    private Integer redOne;
+    private Integer redTwo;
+    private Integer redThree;
+
+    public HeuristicValues(){
+        this(0,0,0,0,0,0);
+    }
+    
+    public HeuristicValues(Integer yellowOne, Integer yellowTwo, Integer yellowThree, Integer redOne, Integer redTwo, Integer redThree){
+        setYellowOne(yellowOne);
+        setYellowTwo(yellowTwo);
+        setYellowThree(yellowThree);
+        setRedOne(redOne);
+        setRedTwo(redTwo);
+        setRedThree(redThree);
+    }
+
+    /**
+     * @return the yellowOne
+     */
+    public Integer getYellowOne() {
+        return yellowOne;
+    }
+
+    /**
+     * @param yellowOne the yellowOne to set
+     */
+    public void setYellowOne(Integer yellowOne) {
+        this.yellowOne = yellowOne;
+    }
+
+    /**
+     * @return the yellowTwo
+     */
+    public Integer getYellowTwo() {
+        return yellowTwo;
+    }
+
+    /**
+     * @param yellowTwo the yellowTwo to set
+     */
+    public void setYellowTwo(Integer yellowTwo) {
+        this.yellowTwo = yellowTwo;
+    }
+
+    /**
+     * @return the yellowThree
+     */
+    public Integer getYellowThree() {
+        return yellowThree;
+    }
+
+    /**
+     * @param yellowThree the yellowThree to set
+     */
+    public void setYellowThree(Integer yellowThree) {
+        this.yellowThree = yellowThree;
+    }
+
+    /**
+     * @return the redOne
+     */
+    public Integer getRedOne() {
+        return redOne;
+    }
+
+    /**
+     * @param redOne the redOne to set
+     */
+    public void setRedOne(Integer redOne) {
+        this.redOne = redOne;
+    }
+
+    /**
+     * @return the redTwo
+     */
+    public Integer getRedTwo() {
+        return redTwo;
+    }
+
+    /**
+     * @param redTwo the redTwo to set
+     */
+    public void setRedTwo(Integer redTwo) {
+        this.redTwo = redTwo;
+    }
+
+    /**
+     * @return the redThree
+     */
+    public Integer getRedThree() {
+        return redThree;
+    }
+
+    /**
+     * @param redThree the redThree to set
+     */
+    public void setRedThree(Integer redThree) {
+        this.redThree = redThree;
+    }
+
+    @Override
+    protected HeuristicValues clone(){
+       return new HeuristicValues(yellowOne, yellowTwo, yellowThree, redOne, redTwo, redThree);
+    }
 }

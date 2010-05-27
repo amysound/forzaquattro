@@ -1,7 +1,5 @@
 package connectFour;
 
-import java.util.Random;
-
 /**
  * AlphaBetaPlayer.java
  *
@@ -15,40 +13,20 @@ import java.util.Random;
  * Classe che implementa un AIPlayerInterface che utilizza l'algoritmo Alpha Beta Pruning
  */
 
-public class AlphaBetaPlayer implements AIPlayerInterface {
-		
-    private Integer playerId;
-    private Heuristic heuristic = new Heuristic();
-    private Integer horizon = 0;
-    private Integer examinatedNodeNumber = 0;
+public class AlphaBetaPlayer extends AIPlayerInterface {
 
     /**
-     * Constructor.
+     * Constructor
      */
-    public AlphaBetaPlayer(Integer playerId) {
-        setPlayerId(playerId);
-    }
 
     public AlphaBetaPlayer(Integer playerId, Integer horizon) {
-        this(playerId);
-        if(horizon>0)setHorizon(horizon);
+        super(playerId, horizon);
     }
 
-    @Override
-    public Integer getExaminatedNodeNumber() {
-            return examinatedNodeNumber;
-    }
-
-    /**
-     * metodo che determina la prossima mossa da eseguire e restituisce il nuovo stato
-     * @param gameState Stato attuale del gioco
-     * @return nuovo stato raggiunto applicando la mossa scelta
-     */
     @Override
     public GameState nextMove(GameState gameState) {
-        this.setExaminatedNodeNumber(0);
-        if(this.horizon==null) return gameState;
-        return nextMove(gameState, this.horizon);
+        setExaminatedNodeNumber(0);
+        return nextMove(gameState, getHorizon());
     }
 
     /**
@@ -57,39 +35,15 @@ public class AlphaBetaPlayer implements AIPlayerInterface {
      * @param horizon intero che rappresenta il numero di livelli da sviluppare
      * @return nuovo stato
      */
-    public GameState nextMove(GameState gameState, Integer horizon) {
-        ValueStatePair maxValueStatePair = maxValue(gameState, (-1)*this.maxUtilityValue-1, this.maxUtilityValue+1, horizon);
-
-        //if(maxValueStatePair.getValue().equals((-1)*this.maxUtilityValue)) return nextMove(gameState,1);
-        return maxValueStatePair.getState();
+    private GameState nextMove(GameState gameState, Integer horizon) {
+        ValueMovePair maxValueMovePair = maxValueOptimized(gameState, (-1)*maxUtilityValue-1, maxUtilityValue+1, horizon);
+        gameState.doMove(getPlayerId(), maxValueMovePair.getMove());
+        return gameState;
     }
-
-
-    public Integer[] randomMoves(Integer dim){
-        Random r=new Random();
-        Integer[] nextMoves = new Integer[dim];
-        Integer j=0;
-        Integer temp;
-        for(j=0;j<dim;j++)nextMoves[j]=j;
-//        System.out.println("ORDINATO");
-//        for(j=0;j<n;j++) System.out.print(nextMoves[j]+"-");
-        j=0;
-        while(j<dim){
-            Integer move=r.nextInt(dim-j);
-            //scambia
-            temp=nextMoves[move];
-            nextMoves[move]=nextMoves[dim-j-1];
-            nextMoves[dim-j-1]=temp;
-            j++;
-        }
-//        System.out.println("\nCASUALE");
-//        for(j=0;j<n;j++) System.out.print(nextMoves[j]+"-");
-        return nextMoves;
-    }
-
+    
     /**
-     * maxvalue, procedura ausiliaria al calcolo della prossima mossa con
-     * l'algoritmo Alpha Beta Pruning
+     * @deprecated maxvalue, procedura ausiliaria al calcolo della prossima mossa con
+     * l'algoritmo Alpha Beta Pruning. Utilizzare maxValueOptimized
      * @param gameState stato da esaminare
      * @param alpha
      * @param beta
@@ -100,31 +54,31 @@ public class AlphaBetaPlayer implements AIPlayerInterface {
      */
     private ValueStatePair maxValue(GameState gameState, Integer alpha, Integer beta, Integer horizon){
         // incrementa il numero di nodi esaminati
-        setExaminatedNodeNumber(this.examinatedNodeNumber+1);
+        setExaminatedNodeNumber(getExaminatedNodeNumber()+1);
 
         // CONTROLLO DI TERMINAZIONE: se lo stato è terminale si valuta la funzione di utilità
-        if(gameState.isTerminal())return new ValueStatePair(utility(gameState),gameState);
+        if(gameState.isTerminal()) return new ValueStatePair(utility(gameState),gameState);
 
         /**
          * CONTROLLO SULL'ORIZZONTE: se abbiamo raggiunto l'orizzonte massimo
          * valutiamo la funzione euristica
          */
-        if(horizon<=0)return new ValueStatePair(this.playerId*heuristic.calculateHeuristic(gameState),gameState);
+        if(horizon<=0)return new ValueStatePair(getPlayerId()*getHeuristic().calculateHeuristic(gameState),gameState);
 
         // calcolare il massimo degli stati successori e ritornarlo in output
 
         //inizializzazione del maxValue e del maxState
-        Integer maxValue = (-1)*this.maxUtilityValue-1;
+        Integer maxValue = (-1)*maxUtilityValue-1;
         GameState maxState = null;
 
         //ricerca dello stato con maxValue massimo
-        for(Integer i : randomMoves(gameState.getColumns())){
+        for(Integer i : getFromCenterNextMoves(gameState.getColumns())){
             try{
 //                System.out.println("MOSSA "+i);
                 GameState succ = gameState.clone();
 
                 // effettuiamo la mossa i
-                if(succ.doMove(this.playerId, i)){
+                if(succ.doMove(getPlayerId(), i)){
 
                     // calcoliamo il minValue dello stato ottenuto applicando la mossa i
                     ValueStatePair minValueStatePair = minValue(succ, alpha, beta, horizon-1);
@@ -148,7 +102,7 @@ public class AlphaBetaPlayer implements AIPlayerInterface {
     }
 
     /**
-     * minvalue, procedura ausiliaria al calcolo della prossima mossa con
+     * @deprecated minvalue, procedura ausiliaria al calcolo della prossima mossa con
      * l'algoritmo Alpha Beta Pruning
      * @param gameState stato da esaminare
      * @param alpha
@@ -160,30 +114,30 @@ public class AlphaBetaPlayer implements AIPlayerInterface {
      */
     private ValueStatePair minValue(GameState gameState, Integer alpha, Integer beta, Integer horizon){
         // incrementa il numero di nodi esaminati
-        setExaminatedNodeNumber(this.examinatedNodeNumber+1);
+        setExaminatedNodeNumber(getExaminatedNodeNumber()+1);
 
         // CONTROLLO DI TERMINAZIONE: se lo stato è terminale si valuta la funzione di utilità
-        if(gameState.isTerminal())return new ValueStatePair(utility(gameState),gameState);
+        if(gameState.isTerminal()) return new ValueStatePair(utility(gameState),gameState);
                   
         /**
          * CONTROLLO SULL'ORIZZONTE: se abbiamo raggiunto l'orizzonte massimo
          * valutiamo la funzione euristica
          */
-        if(horizon<=0)return new ValueStatePair(this.playerId*heuristic.calculateHeuristic(gameState),gameState);
+        if(horizon<=0)return new ValueStatePair(getPlayerId()*getHeuristic().calculateHeuristic(gameState),gameState);
 
         // calcolare il massimo degli stati successori e ritornarlo in output
 
         // inizializzazione del minValue e del minState
-        Integer minValue = this.maxUtilityValue+1;
+        Integer minValue = maxUtilityValue+1;
         GameState minState=null;
 
         //ricerca dello stato con minValue minimo
-        for(Integer i : randomMoves(gameState.getColumns())){
+        for(Integer i : getFromCenterNextMoves(gameState.getColumns())){
             try{
                 GameState succ = gameState.clone();
 
                 // effettuiamo la mossa i
-                if(succ.doMove(-1*this.playerId, i)){
+                if(succ.doMove(-1*getPlayerId(), i)){
 
                     // calcoliamo il maxValue dello stato ottenuto applicando la mossa i
                     ValueStatePair maxValueStatePair = maxValue(succ, alpha, beta, horizon-1);
@@ -206,48 +160,124 @@ public class AlphaBetaPlayer implements AIPlayerInterface {
         return new ValueStatePair(minValue, minState);
     }
 
+
     /**
-     * valuta la funzione di utilità
-     * @param gameState stato di cui si vuole valutare la funzione di utilità
-     * @return intero che rappresenta l'utilità dello stato
+     * maxvalue ottimizzato, procedura ausiliaria al calcolo della prossima mossa con
+     * l'algoritmo Alpha Beta Pruning
+     * @param gameState stato da esaminare
+     * @param alpha
+     * @param beta
+     * @param horizon intero che rappresenta il numero di livelli che è ancora
+     * possibile esaminare
+     * @return una coppia Valore-Stato, contenente il max value e lo stato
+     * corrispondente
      */
-    public Integer utility(GameState gameState){
-        return this.maxUtilityValue*getPlayerId()*gameState.getWinner();
+    private ValueMovePair maxValueOptimized(GameState gameState, Integer alpha, Integer beta, Integer horizon){
+        // incrementa il numero di nodi esaminati
+        setExaminatedNodeNumber(getExaminatedNodeNumber()+1);
+
+        // CONTROLLO DI TERMINAZIONE: se lo stato è terminale si valuta la funzione di utilità
+        if(gameState.isTerminal()) return new ValueMovePair(utility(gameState),gameState.getMove());
+
+        /**
+         * CONTROLLO SULL'ORIZZONTE: se abbiamo raggiunto l'orizzonte massimo
+         * valutiamo la funzione euristica
+         */
+        if(horizon<=0)return new ValueMovePair(getPlayerId()*getHeuristic().calculateHeuristic(gameState),gameState.getMove());
+
+        // calcolare il massimo degli stati successori e ritornarlo in output
+
+        //inizializzazione del maxValue e del maxState
+        Integer maxValue = (-1)*maxUtilityValue-1;
+        Integer maxMove = null;
+
+        //ricerca dello stato con maxValue massimo
+        for(Integer i : getFromCenterNextMoves(gameState.getColumns())){
+
+            // effettuiamo la mossa i
+            if(gameState.doMove(getPlayerId(), i)){
+
+                // calcoliamo il minValue dello stato ottenuto applicando la mossa i
+                ValueMovePair minValueMovePair = minValueOptimized(gameState, alpha, beta, horizon-1);
+
+                // aggiorniamo, se necessario, il maxValue e il maxMove
+                if(maxValue<minValueMovePair.getValue()){
+                    maxValue=minValueMovePair.getValue();
+                    maxMove=i;
+                }
+
+                // PRUNING
+                if (maxValue>=beta) {
+                    gameState.undo();
+                    return new ValueMovePair(maxValue, maxMove);
+                }
+                alpha=Math.max(alpha, maxValue);
+
+                //annullare la mossa
+                gameState.undo();
+            }
+        }
+
+        return new ValueMovePair(maxValue, maxMove);
     }
 
     /**
-     * @return the playerId
+     * minvalue ottimizzato, procedura ausiliaria al calcolo della prossima mossa con
+     * l'algoritmo Alpha Beta Pruning
+     * @param gameState stato da esaminare
+     * @param alpha
+     * @param beta
+     * @param horizon intero che rappresenta il numero di livelli che è ancora
+     * possibile esaminare
+     * @return una coppia Valore-Stato, contenente il min value e lo stato
+     * corrispondente
      */
-    public Integer getPlayerId() {
-        return playerId;
-    }
+    private ValueMovePair minValueOptimized(GameState gameState, Integer alpha, Integer beta, Integer horizon){
+        // incrementa il numero di nodi esaminati
+        setExaminatedNodeNumber(getExaminatedNodeNumber()+1);
 
-    /**
-     * @param playerId the playerId to set
-     */
-    public void setPlayerId(Integer playerId) {
-        this.playerId = playerId;
-    }
+        // CONTROLLO DI TERMINAZIONE: se lo stato è terminale si valuta la funzione di utilità
+        if(gameState.isTerminal()) return new ValueMovePair(utility(gameState),gameState.getMove());
 
-    /**
-     * @return the horizon
-     */
-    public Integer getHorizon() {
-        return horizon;
-    }
+        /**
+         * CONTROLLO SULL'ORIZZONTE: se abbiamo raggiunto l'orizzonte massimo
+         * valutiamo la funzione euristica
+         */
+        if(horizon<=0)return new ValueMovePair(getPlayerId()*getHeuristic().calculateHeuristic(gameState),gameState.getMove());
 
-    /**
-     * @param horizon the horizon to set
-     */
-    public void setHorizon(Integer horizon) {
-        this.horizon = horizon;
-    }
+        // calcolare il massimo degli stati successori e ritornarlo in output
 
-    /**
-     * @param examinatedNodeNumber the examinatedNodeNumber to set
-     */
-    private void setExaminatedNodeNumber(Integer examinatedNodeNumber) {
-        this.examinatedNodeNumber = examinatedNodeNumber;
+        // inizializzazione del minValue e del minState
+        Integer minValue = maxUtilityValue+1;
+        Integer minMove=null;
+
+        //ricerca dello stato con minValue minimo
+        for(Integer i : getFromCenterNextMoves(gameState.getColumns())){
+            // effettuiamo la mossa i
+            if(gameState.doMove(-1*getPlayerId(), i)){
+
+                // calcoliamo il maxValue dello stato ottenuto applicando la mossa i
+                ValueMovePair maxValueMovePair = maxValueOptimized(gameState, alpha, beta, horizon-1);
+
+                // aggiorniamo, se necessario, il minValue e il minMove
+                if(minValue>maxValueMovePair.getValue()){
+                    minValue=maxValueMovePair.getValue();
+                    minMove=i;
+                }
+
+                // PRUNING
+                if(minValue<=alpha) {
+                    gameState.undo();
+                    return new ValueMovePair(minValue, minMove);
+                }
+                beta=Math.min(beta, minValue);
+
+                //annullare la mossa
+                gameState.undo();
+            }
+        }
+
+        return new ValueMovePair(minValue, minMove);
     }
 
 }

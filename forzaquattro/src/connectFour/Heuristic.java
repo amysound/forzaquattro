@@ -34,8 +34,8 @@ public class Heuristic {
      */
     public Integer calculateHeuristic(GameState gameState){
 //    c++;
-        Integer temp = countConnectHeuristic(gameState);
-//        Integer temp = naiveHeuristic(gameState);
+//        Integer temp = countConnectHeuristic(gameState);
+        Integer temp = naiveHeuristic(gameState);
 //        System.out.println(c+": "+temp);
         return temp;
     }
@@ -104,18 +104,27 @@ public class Heuristic {
 //        System.out.println("redTwo = "+redTwo);
 //        System.out.println("redThree = "+redThree);
         //casi particolari
-//        player=(-1)*gameState.getPlayer();
+        player=(-1)*gameState.getPlayer();
 //
-//        if(player.equals(ControllerInterface.yellow) && yellowThree>0) return AIPlayerInterface.maxUtilityValue-1;
-//        if(player.equals(ControllerInterface.red) && redThree>0) return -1*(AIPlayerInterface.maxUtilityValue-1);
+        if(player.equals(ControllerInterface.yellow) && yellowThree>0) return AIPlayerInterface.maxUtilityValue-1;
+        if(player.equals(ControllerInterface.red) && redThree>0) return -1*(AIPlayerInterface.maxUtilityValue-1);
 //
-//        if(player.equals(ControllerInterface.red) && yellowThree>1) return AIPlayerInterface.maxUtilityValue-1;
-//        if(player.equals(ControllerInterface.yellow) && redThree>1) return -1*(AIPlayerInterface.maxUtilityValue-1);
+        if(player.equals(ControllerInterface.red) && yellowThree>1) return AIPlayerInterface.maxUtilityValue-1;
+        if(player.equals(ControllerInterface.yellow) && redThree>1) return -1*(AIPlayerInterface.maxUtilityValue-1);
 
         heuristicValue = (weightOne*yellowOne)+(weightTwo*yellowTwo)+(weightThree*yellowThree)
                          -((weightOne*redOne)+(weightTwo*redTwo)+(weightThree*redThree));
-
+//        System.out.println(gameState+"HEURISTICVALUE = "+heuristicValue+"\nYELLOWTHREE = "+yellowThree);
         return heuristicValue;
+    }
+
+    private Integer countConnectHeuristicImmediate(GameState gameState){
+        return (weightOne*countConnect(gameState, ControllerInterface.yellow, 1))+
+               (weightTwo*countConnect(gameState, ControllerInterface.yellow, 2))+
+               (weightThree*countConnect(gameState, ControllerInterface.yellow, 3))-
+               ((weightOne*countConnect(gameState, ControllerInterface.red, 1))+
+               (weightTwo*countConnect(gameState, ControllerInterface.red, 2))+
+               (weightThree*countConnect(gameState, ControllerInterface.red, 3)));
     }
 
     /**
