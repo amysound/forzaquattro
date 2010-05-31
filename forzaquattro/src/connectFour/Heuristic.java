@@ -34,8 +34,9 @@ public class Heuristic {
      */
     public Integer calculateHeuristic(GameState gameState){
 //    c++;
+        Integer temp = countConnectHeuristicOptimized(gameState);
 //        Integer temp = countConnectHeuristic(gameState);
-        Integer temp = naiveHeuristic(gameState);
+//        Integer temp = naiveHeuristic(gameState);
 //        System.out.println(c+": "+temp);
         return temp;
     }
@@ -93,6 +94,57 @@ public class Heuristic {
         redOne = countConnect(gameState, ControllerInterface.red, 1);
         redTwo = countConnect(gameState, ControllerInterface.red, 2);
         redThree = countConnect(gameState, ControllerInterface.red, 3);
+      //  System.out.println(c+": "+temp);
+
+//        System.out.println("yellowOne = "+yellowOne);
+//        System.out.println("yellowTwo = "+yellowTwo);
+//        System.out.println("yellowThree = "+yellowThree);
+//
+//
+//        System.out.println("redOne = "+redOne);
+//        System.out.println("redTwo = "+redTwo);
+//        System.out.println("redThree = "+redThree);
+        //casi particolari
+        player=(-1)*gameState.getPlayer();
+//
+        if(player.equals(ControllerInterface.yellow) && yellowThree>0) return AIPlayerInterface.maxUtilityValue-1;
+        if(player.equals(ControllerInterface.red) && redThree>0) return -1*(AIPlayerInterface.maxUtilityValue-1);
+//
+        if(player.equals(ControllerInterface.red) && yellowThree>1) return AIPlayerInterface.maxUtilityValue-1;
+        if(player.equals(ControllerInterface.yellow) && redThree>1) return -1*(AIPlayerInterface.maxUtilityValue-1);
+
+        heuristicValue = (weightOne*yellowOne)+(weightTwo*yellowTwo)+(weightThree*yellowThree)
+                         -((weightOne*redOne)+(weightTwo*redTwo)+(weightThree*redThree));
+//        System.out.println(gameState+"HEURISTICVALUE = "+heuristicValue+"\nYELLOWTHREE = "+yellowThree);
+        return heuristicValue;
+    }
+
+    /**
+     * valori valutati per il giocatore yellow
+     * @param gameState
+     * @return
+     */
+    private Integer countConnectHeuristicOptimized(GameState gameState){
+        //c++;
+        Integer yellowOne = gameState.getHeuristicValues().getYellowOne();
+        Integer yellowTwo = gameState.getHeuristicValues().getYellowTwo();
+        Integer yellowThree = gameState.getHeuristicValues().getYellowThree();
+        Integer redOne = gameState.getHeuristicValues().getRedOne();
+        Integer redTwo = gameState.getHeuristicValues().getRedTwo();
+        Integer redThree = gameState.getHeuristicValues().getRedThree();
+
+        Integer heuristicValue;
+
+        Integer player;
+
+//        yellowOne = countConnect(gameState, ControllerInterface.yellow, 1);
+//        yellowTwo = countConnect(gameState, ControllerInterface.yellow, 2);
+//        yellowThree = countConnect(gameState, ControllerInterface.yellow, 3);
+//
+//
+//        redOne = countConnect(gameState, ControllerInterface.red, 1);
+//        redTwo = countConnect(gameState, ControllerInterface.red, 2);
+//        redThree = countConnect(gameState, ControllerInterface.red, 3);
       //  System.out.println(c+": "+temp);
 
 //        System.out.println("yellowOne = "+yellowOne);

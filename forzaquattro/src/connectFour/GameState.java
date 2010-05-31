@@ -134,7 +134,9 @@ public class GameState implements Cloneable{
         board[firstFreeRow][column]=player;
         this.setPlayer(player);
         movesHistory.push(this.move);
-        heuristicValuesHistory.push(new HeuristicValues());
+        heuristicValuesHistory.push(this.getHeuristicValues()); //INVECE CHE UNO NUOVO: LA COPIA DEL VECCHIO
+        this.heuristicValues=this.getHeuristicValues().clone();
+        //IN QUESTO MOMENTO C'E' UN CLONE IN HEURISTICVALUES
 //        heuristicValuesHistory.push(this.heuristicValues);
         this.setMove(column);
         this.setFreeCells(this.freeCells-1);
@@ -143,9 +145,10 @@ public class GameState implements Cloneable{
         /* se c'è un vincitore oppure la partita è finita in pareggio aggiorna la
          * variabile winner
          */
-        if(hasWin(firstFreeRow, column))setWinner(player);
+//        if(hasWin(firstFreeRow, column))setWinner(player);
+        if(hasWinWithEuristicValues(firstFreeRow, column))setWinner(player);
 
-        // HAS WIN CREA IL NUOVO HEURISTICVALUE E FA IL PUSH DEL VECCHIO
+        // HAS WIN AGGIORNA HEURISTICVALUE
         else if(this.freeCells==0)setWinner(0);
 
         return true;
@@ -318,23 +321,230 @@ public class GameState implements Cloneable{
      * @return true se la mossa ha determinato una vittoria; false altrimenti
      */
     private Boolean hasWinWithEuristicValues(Integer row, Integer column){
-        Integer player = getCellState(row, column);
-        Integer playerCells = 0;
-        Integer opponentCells = 0;
-
-
-        return false;
+        Integer playerColor = getCellState(row, column);
+//        System.out.println("HASWINWITHHEURISTICVALUES");
+        return checkHorizontalWinWithEuristicValues(row, column, playerColor)||
+               checkDiagonalWinWithEuristicValues(row, column, playerColor)||
+               checkAntiDiagonalWinWithEuristicValues(row, column, playerColor)||
+               checkVerticalWinFromStartWithEuristicValues(row, column, playerColor);
+//        System.out.println("FINE");
+//        return win;
     }
 
     /**
-     * metod
+     * metodo che verifica se la mossa effettuata ha determinato una vittoria
+     * in orizzontale; contemporaneamente aggiorna i valori in heuristicValues
      */
-    private Boolean checkHorizontalWinWithEuristicValues(Integer row, Integer column){
+    private Boolean checkHorizontalWinWithEuristicValues(Integer row, Integer column, Integer player){
+        Integer i = 0;
+        while(i<4 && !checkHorizontalWinFromStartWithEuristicValues(row, column+i, player)) i++;
+        if(i.equals(4)) return false;
+        return true;
+    }
+
+    /**
+     * metodo che verifica se c'è un forza quattro in orizzontale a sinistra delle
+     * coordinate inserite; contemporaneamente aggiorna i valori in heuristicValues
+     */
+    private Boolean checkHorizontalWinFromStartWithEuristicValues(Integer row, Integer column, Integer player){
+        Integer playerCells = 0;
+        Integer opponentCells = 0;
+
+        Integer c;
+
+        //controlla se è possibile effettuare il controllo
+        if(column<3 || column>=this.columns || row<0 || row>=this.rows) return false;
+
+        //conteggio delle pedine inserite
+        for(c=0;c<4;c++){
+            if(this.board[row][column-c].equals(player)) playerCells++;
+            else if(this.board[row][column-c].equals((-1)*player)) opponentCells++;
+        }
+
+        //Controllo forzaquattro
+        if(playerCells.equals(4)) return true;
+
+        updateHeuristicValues(playerCells, opponentCells, player);
+
         return false;
     }
 
     /**
      * metodo che verifica se la mossa effettuata ha determinato una vittoria
+     * in diagonale; contemporaneamente aggiorna i valori in heuristicValues
+     */
+    private Boolean checkDiagonalWinWithEuristicValues(Integer row, Integer column, Integer player){
+        Integer i = 0;
+        while(i<4 && !checkDiagonalWinFromStartWithEuristicValues(row+i, column-i, player)) i++;
+        if(i.equals(4)) return false;
+        return true;
+    }
+
+    /**
+     * metodo che verifica se c'è un forza quattro in diagonale a destra e in basso
+     * rispetto alle coordinate inserite; contemporaneamente aggiorna i valori in
+     * heuristicValues
+     */
+    private Boolean checkDiagonalWinFromStartWithEuristicValues(Integer row, Integer column, Integer player){
+        Integer playerCells = 0;
+        Integer opponentCells = 0;
+
+        Integer c;
+
+        //controlla se è possibile effettuare il controllo
+        if(column<0 || column>=this.columns-3 || row<3 || row>=this.rows) return false;
+
+        //conteggio delle pedine inserite
+        for(c=0;c<4;c++){
+            if(this.board[row-c][column+c].equals(player)) playerCells++;
+            else if(this.board[row-c][column+c].equals((-1)*player)) opponentCells++;
+        }
+
+        //Controllo forzaquattro
+        if(playerCells.equals(4)) return true;
+
+        updateHeuristicValues(playerCells, opponentCells, player);
+
+        return false;
+    }
+
+    /**
+     * metodo che verifica se la mossa effettuata ha determinato una vittoria
+     * in antidiagonale; contemporaneamente aggiorna i valori in heuristicValues
+     */
+    private Boolean checkAntiDiagonalWinWithEuristicValues(Integer row, Integer column, Integer player){
+        Integer i = 0;
+        while(i<4 && !checkAntiDiagonalWinFromStartWithEuristicValues(row+i, column+i, player)) i++;
+        if(i.equals(4)) return false;
+        return true;
+    }
+
+    /**
+     * metodo che verifica se c'è un forza quattro in antidiagonale a sinistra e in basso
+     * rispetto alle coordinate inserite; contemporaneamente aggiorna i valori in
+     * heuristicValues
+     */
+    private Boolean checkAntiDiagonalWinFromStartWithEuristicValues(Integer row, Integer column, Integer player){
+        Integer playerCells = 0;
+        Integer opponentCells = 0;
+
+        Integer c;
+
+        //controlla se è possibile effettuare il controllo
+        if(column<3 || column>=this.columns || row<3 || row>=this.rows) return false;
+
+        //conteggio delle pedine inserite
+        for(c=0;c<4;c++){
+            if(this.board[row-c][column-c].equals(player)) playerCells++;
+            else if(this.board[row-c][column-c].equals((-1)*player)) opponentCells++;
+        }
+
+        //Controllo forzaquattro
+        if(playerCells.equals(4)) return true;
+
+        updateHeuristicValues(playerCells, opponentCells, player);
+
+        return false;
+    }
+
+    /**
+     * metodo che verifica se c'è un forza quattro in verticale in basso
+     * rispetto alle coordinate inserite; contemporaneamente aggiorna i valori in
+     * heuristicValues
+     */
+    private Boolean checkVerticalWinFromStartWithEuristicValues(Integer row, Integer column, Integer player){
+        Integer playerCells = 0;
+        Integer opponentCells = 0;
+
+        Integer c;
+
+        //controlla se è possibile effettuare il controllo
+        if(column<0 || column>=this.columns || row<3 || row>=this.rows) return false;
+
+        //conteggio delle pedine inserite
+        for(c=0;c<4;c++){
+            if(this.board[row-c][column].equals(player)) playerCells++;
+            else if(this.board[row-c][column].equals((-1)*player)) opponentCells++;
+        }
+
+        //Controllo forzaquattro
+        if(playerCells.equals(4)) return true;
+
+        updateHeuristicValues(playerCells, opponentCells, player);
+
+        return false;
+    }
+
+    private void updateHeuristicValues(Integer playerCells, Integer opponentCells, Integer player) {
+        if (playerCells.equals(3)) {
+            /**
+             * prima erano 2 ed ora 3
+             * se non ci sono pedine avversarie => decrementare playerTwo ed incrementare playerThree
+             * se ci sono pedine avversarie => NIENTE
+             */
+            if (opponentCells.equals(0)) {
+                if (player.equals(ControllerInterface.yellow)) {
+                    this.getHeuristicValues().setYellowThree(this.getHeuristicValues().getYellowThree() + 1);
+                    this.getHeuristicValues().setYellowTwo(this.getHeuristicValues().getYellowTwo() - 1);
+                } else {
+                    this.getHeuristicValues().setRedThree(this.getHeuristicValues().getRedThree() + 1);
+                    this.getHeuristicValues().setRedTwo(this.getHeuristicValues().getRedTwo() - 1);
+                }
+            }
+        } else if (playerCells.equals(2)) {
+            /**
+             * prima era 1 ed ora 2
+             * se non ci sono pedine avversarie => decrementare playerOne ed incrementare playerTwo
+             * se ci sono pedine avversarie => NIENTE
+             */
+            if (opponentCells.equals(0)) {
+                if (player.equals(ControllerInterface.yellow)) {
+                    this.getHeuristicValues().setYellowTwo(this.getHeuristicValues().getYellowTwo() + 1);
+                    this.getHeuristicValues().setYellowOne(this.getHeuristicValues().getYellowOne() - 1);
+                } else {
+                    this.getHeuristicValues().setRedTwo(this.getHeuristicValues().getRedTwo() + 1);
+                    this.getHeuristicValues().setRedOne(this.getHeuristicValues().getRedOne() - 1);
+                }
+            }
+        } else if (playerCells.equals(1)) {
+            /**
+             * prima erano 0 ed ora 1
+             * se non ci sono pedine avversarie => incrementare playerOne
+             * se c'è una pedina avversaria => decrementare opponentOne
+             * se ci sono due pedine avversarie => decrementare opponentTwo
+             * se ci sono tre pedine avversarie => decrementare opponentThree
+             */
+            if (opponentCells.equals(0)) {
+                if (player.equals(ControllerInterface.yellow)) {
+                    this.getHeuristicValues().setYellowOne(this.getHeuristicValues().getYellowOne() + 1);
+                } else {
+                    this.getHeuristicValues().setRedOne(this.getHeuristicValues().getRedOne() + 1);
+                }
+            } else if (opponentCells.equals(1)) {
+                if (player.equals(ControllerInterface.yellow)) {
+                    this.getHeuristicValues().setRedOne(this.getHeuristicValues().getYellowOne() - 1);
+                } else {
+                    this.getHeuristicValues().setYellowOne(this.getHeuristicValues().getRedOne() - 1);
+                }
+            } else if (opponentCells.equals(2)) {
+                if (player.equals(ControllerInterface.yellow)) {
+                    this.getHeuristicValues().setRedTwo(this.getHeuristicValues().getYellowTwo() - 1);
+                } else {
+                    this.getHeuristicValues().setYellowTwo(this.getHeuristicValues().getRedTwo() - 1);
+                }
+            } else if (opponentCells.equals(3)) {
+                if (player.equals(ControllerInterface.yellow)) {
+                    this.getHeuristicValues().setRedThree(this.getHeuristicValues().getYellowThree() - 1);
+                } else {
+                    this.getHeuristicValues().setYellowThree(this.getHeuristicValues().getRedThree() - 1);
+                }
+            }
+        }
+    }
+
+    /**
+     * @deprecated metodo che verifica se la mossa effettuata ha determinato una vittoria
+     * utilizzare hasWinWithHeuristicValues
      * @param row riga della cella in cui è stata inserita l'ultima pedina
      * @param column colonna della cella in cui è stata inserita l'ultima pedina
      * @return true se la mossa ha determinato una vittoria; false altrimenti
@@ -618,6 +828,13 @@ public class GameState implements Cloneable{
      */
     private Integer[][] getBoard() {
         return board;
+    }
+
+    /**
+     * @return the heuristicValues
+     */
+    public HeuristicValues getHeuristicValues() {
+        return heuristicValues;
     }
 
 }
