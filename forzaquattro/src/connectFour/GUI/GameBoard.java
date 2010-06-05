@@ -54,7 +54,7 @@ import javax.swing.JLabel;
 class Square extends JLabel {
     public Square() {
         super();
-        setIcon(new ImageIcon(getClass().getResource("/img/blank.jpg")));
+        setIcon(new ImageIcon(getClass().getResource("/img/blank.JPG")));
     }
 }
 
@@ -136,8 +136,8 @@ public class GameBoard extends javax.swing.JPanel implements MouseListener, Acti
      */
     private boolean usesNextButton=false;
    
-    private final ImageIcon red=new ImageIcon(getClass().getResource("/img/red.jpg"));
-    private final ImageIcon yellow=new ImageIcon(getClass().getResource("/img/yellow.jpg"));
+    private final ImageIcon red=new ImageIcon(getClass().getResource("/img/red.JPG"));
+    private final ImageIcon yellow=new ImageIcon(getClass().getResource("/img/yellow.JPG"));
 
     private String yellowType="";
     private String redType="";
