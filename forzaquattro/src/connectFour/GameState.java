@@ -326,7 +326,7 @@ public class GameState implements Cloneable{
         return checkHorizontalWinWithEuristicValues(row, column, playerColor)||
                checkDiagonalWinWithEuristicValues(row, column, playerColor)||
                checkAntiDiagonalWinWithEuristicValues(row, column, playerColor)||
-               checkVerticalWinFromStartWithEuristicValues(row, column, playerColor);
+               checkVerticalWinWithEuristicValues(row, column, playerColor);
 //        System.out.println("FINE");
 //        return win;
     }
@@ -349,7 +349,7 @@ public class GameState implements Cloneable{
     private Boolean checkHorizontalWinFromStartWithEuristicValues(Integer row, Integer column, Integer player){
         Integer playerCells = 0;
         Integer opponentCells = 0;
-
+        Integer realFreeCells = 0;
         Integer c;
 
         //controlla se è possibile effettuare il controllo
@@ -359,12 +359,14 @@ public class GameState implements Cloneable{
         for(c=0;c<4;c++){
             if(this.board[row][column-c].equals(player)) playerCells++;
             else if(this.board[row][column-c].equals((-1)*player)) opponentCells++;
+            else if(this.firstFreeCellForColumn[column-c].equals(row)) realFreeCells++;
         }
 
         //Controllo forzaquattro
         if(playerCells.equals(4)) return true;
 
-        updateHeuristicValues(playerCells, opponentCells, player);
+//        updateHeuristicValues(playerCells, opponentCells, player);
+        updateHeuristicValuesWithRealFreeCells(playerCells, opponentCells, realFreeCells, player);
 
         return false;
     }
@@ -388,6 +390,7 @@ public class GameState implements Cloneable{
     private Boolean checkDiagonalWinFromStartWithEuristicValues(Integer row, Integer column, Integer player){
         Integer playerCells = 0;
         Integer opponentCells = 0;
+        Integer realFreeCells = 0;
 
         Integer c;
 
@@ -398,12 +401,14 @@ public class GameState implements Cloneable{
         for(c=0;c<4;c++){
             if(this.board[row-c][column+c].equals(player)) playerCells++;
             else if(this.board[row-c][column+c].equals((-1)*player)) opponentCells++;
+            else if(this.firstFreeCellForColumn[column+c].equals(row-c)) realFreeCells++;
         }
 
         //Controllo forzaquattro
         if(playerCells.equals(4)) return true;
 
-        updateHeuristicValues(playerCells, opponentCells, player);
+//        updateHeuristicValues(playerCells, opponentCells, player);
+        updateHeuristicValuesWithRealFreeCells(playerCells, opponentCells, realFreeCells, player);
 
         return false;
     }
@@ -427,6 +432,7 @@ public class GameState implements Cloneable{
     private Boolean checkAntiDiagonalWinFromStartWithEuristicValues(Integer row, Integer column, Integer player){
         Integer playerCells = 0;
         Integer opponentCells = 0;
+        Integer realFreeCells = 0;
 
         Integer c;
 
@@ -437,14 +443,28 @@ public class GameState implements Cloneable{
         for(c=0;c<4;c++){
             if(this.board[row-c][column-c].equals(player)) playerCells++;
             else if(this.board[row-c][column-c].equals((-1)*player)) opponentCells++;
+            else if(this.firstFreeCellForColumn[column-c].equals(row-c)) realFreeCells++;
         }
 
         //Controllo forzaquattro
         if(playerCells.equals(4)) return true;
 
-        updateHeuristicValues(playerCells, opponentCells, player);
+//        updateHeuristicValues(playerCells, opponentCells, player);
+        updateHeuristicValuesWithRealFreeCells(playerCells, opponentCells, realFreeCells, player);
 
         return false;
+    }
+
+
+    /**
+     * metodo che verifica se la mossa effettuata ha determinato una vittoria
+     * in verticale; contemporaneamente aggiorna i valori in heuristicValues
+     */
+    private Boolean checkVerticalWinWithEuristicValues(Integer row, Integer column, Integer player){
+        Integer i = 0;
+        while(i<4 && !checkVerticalWinFromStartWithEuristicValues(row+i, column, player)) i++;
+        if(i.equals(4)) return false;
+        return true;
     }
 
     /**
@@ -455,6 +475,7 @@ public class GameState implements Cloneable{
     private Boolean checkVerticalWinFromStartWithEuristicValues(Integer row, Integer column, Integer player){
         Integer playerCells = 0;
         Integer opponentCells = 0;
+        Integer realFreeCells = 0;
 
         Integer c;
 
@@ -465,16 +486,24 @@ public class GameState implements Cloneable{
         for(c=0;c<4;c++){
             if(this.board[row-c][column].equals(player)) playerCells++;
             else if(this.board[row-c][column].equals((-1)*player)) opponentCells++;
+            else if(this.firstFreeCellForColumn[column].equals(row-c)) realFreeCells++;
         }
 
         //Controllo forzaquattro
         if(playerCells.equals(4)) return true;
 
-        updateHeuristicValues(playerCells, opponentCells, player);
+//        updateHeuristicValues(playerCells, opponentCells, player);
+        updateHeuristicValuesWithRealFreeCells(playerCells, opponentCells, realFreeCells, player);
 
         return false;
     }
 
+    /**
+     * @deprecated utilizzare updateHeuristicValuesWithRealFreeCells
+     * @param playerCells
+     * @param opponentCells
+     * @param player
+     */
     private void updateHeuristicValues(Integer playerCells, Integer opponentCells, Integer player) {
         if (playerCells.equals(3)) {
             /**
@@ -522,21 +551,150 @@ public class GameState implements Cloneable{
                 }
             } else if (opponentCells.equals(1)) {
                 if (player.equals(ControllerInterface.yellow)) {
-                    this.getHeuristicValues().setRedOne(this.getHeuristicValues().getYellowOne() - 1);
+                    this.getHeuristicValues().setRedOne(this.getHeuristicValues().getRedOne() - 1);
                 } else {
-                    this.getHeuristicValues().setYellowOne(this.getHeuristicValues().getRedOne() - 1);
+                    this.getHeuristicValues().setYellowOne(this.getHeuristicValues().getYellowOne() - 1);
                 }
             } else if (opponentCells.equals(2)) {
                 if (player.equals(ControllerInterface.yellow)) {
-                    this.getHeuristicValues().setRedTwo(this.getHeuristicValues().getYellowTwo() - 1);
+                    this.getHeuristicValues().setRedTwo(this.getHeuristicValues().getRedTwo() - 1);
                 } else {
-                    this.getHeuristicValues().setYellowTwo(this.getHeuristicValues().getRedTwo() - 1);
+                    this.getHeuristicValues().setYellowTwo(this.getHeuristicValues().getYellowTwo() - 1);
                 }
             } else if (opponentCells.equals(3)) {
                 if (player.equals(ControllerInterface.yellow)) {
-                    this.getHeuristicValues().setRedThree(this.getHeuristicValues().getYellowThree() - 1);
+                    this.getHeuristicValues().setRedThree(this.getHeuristicValues().getRedThree() - 1);
                 } else {
-                    this.getHeuristicValues().setYellowThree(this.getHeuristicValues().getRedThree() - 1);
+                    this.getHeuristicValues().setYellowThree(this.getHeuristicValues().getYellowThree() - 1);
+                }
+            }
+        }
+    }
+
+    private void updateHeuristicValuesWithRealFreeCells(Integer playerCells, Integer opponentCells, Integer realFreeCells, Integer player) {
+        if (playerCells.equals(3)) {
+            /**
+             * prima erano 2 ed ora 3
+             * se non ci sono pedine avversarie => decrementare playerTwo ed incrementare playerThree
+             * se ci sono pedine avversarie => NIENTE
+             */
+            if (opponentCells.equals(0)) {
+                /**
+                 * se c'è una casella vuota disponibile modifichiamo le linee reali, altrimenti quelle virtuali
+                 */
+                if(realFreeCells.equals(1)){
+                    if (player.equals(ControllerInterface.yellow)) {
+                        this.getHeuristicValues().setRealYellowThree(this.getHeuristicValues().getRealYellowThree() + 1);
+                        this.getHeuristicValues().setRealYellowTwo(this.getHeuristicValues().getRealYellowTwo() - 1);
+                    } else {
+                        this.getHeuristicValues().setRealRedThree(this.getHeuristicValues().getRealRedThree() + 1);
+                        this.getHeuristicValues().setRealRedTwo(this.getHeuristicValues().getRealRedTwo() - 1);
+                    }
+                }else{
+                    if (player.equals(ControllerInterface.yellow)) {
+                        this.getHeuristicValues().setYellowThree(this.getHeuristicValues().getYellowThree() + 1);
+                        this.getHeuristicValues().setYellowTwo(this.getHeuristicValues().getYellowTwo() - 1);
+                    } else {
+                        this.getHeuristicValues().setRedThree(this.getHeuristicValues().getRedThree() + 1);
+                        this.getHeuristicValues().setRedTwo(this.getHeuristicValues().getRedTwo() - 1);
+                    }
+                }
+            }
+        } else if (playerCells.equals(2)) {
+            /**
+             * prima era 1 ed ora 2
+             * se non ci sono pedine avversarie => decrementare playerOne ed incrementare playerTwo
+             * se ci sono pedine avversarie => NIENTE
+             */
+            if (opponentCells.equals(0)) {
+                /**
+                 * se ci sono due caselle vuote disponibili modifichiamo le linee reali, altrimenti quelle virtuali
+                 */
+                if(realFreeCells.equals(2)){
+                    if (player.equals(ControllerInterface.yellow)) {
+                        this.getHeuristicValues().setRealYellowTwo(this.getHeuristicValues().getRealYellowTwo() + 1);
+                        this.getHeuristicValues().setRealYellowOne(this.getHeuristicValues().getRealYellowOne() - 1);
+                    } else {
+                        this.getHeuristicValues().setRealRedTwo(this.getHeuristicValues().getRealRedTwo() + 1);
+                        this.getHeuristicValues().setRealRedOne(this.getHeuristicValues().getRealRedOne() - 1);
+                    }
+                }else{
+                    if (player.equals(ControllerInterface.yellow)) {
+                        this.getHeuristicValues().setYellowTwo(this.getHeuristicValues().getYellowTwo() + 1);
+                        this.getHeuristicValues().setYellowOne(this.getHeuristicValues().getYellowOne() - 1);
+                    } else {
+                        this.getHeuristicValues().setRedTwo(this.getHeuristicValues().getRedTwo() + 1);
+                        this.getHeuristicValues().setRedOne(this.getHeuristicValues().getRedOne() - 1);
+                    }
+                }
+            }
+        } else if (playerCells.equals(1)) {
+            /**
+             * prima erano 0 ed ora 1
+             * se non ci sono pedine avversarie => incrementare playerOne
+             * se c'è una pedina avversaria => decrementare opponentOne
+             * se ci sono due pedine avversarie => decrementare opponentTwo
+             * se ci sono tre pedine avversarie => decrementare opponentThree
+             */
+            if (opponentCells.equals(0)) {
+                /**
+                 * se ci sono tre caselle vuote disponibili modifichiamo le linee reali, altrimenti quelle virtuali
+                 */
+                if(realFreeCells.equals(3)){
+                    if (player.equals(ControllerInterface.yellow)) {
+                        this.getHeuristicValues().setRealYellowOne(this.getHeuristicValues().getRealYellowOne() + 1);
+                    } else {
+                        this.getHeuristicValues().setRealRedOne(this.getHeuristicValues().getRealRedOne() + 1);
+                    }
+                }else{
+                    if (player.equals(ControllerInterface.yellow)) {
+                        this.getHeuristicValues().setYellowOne(this.getHeuristicValues().getYellowOne() + 1);
+                    } else {
+                        this.getHeuristicValues().setRedOne(this.getHeuristicValues().getRedOne() + 1);
+                    }
+                }
+            } else if (opponentCells.equals(1)) {
+                /**
+                 * se ci sono due caselle vuote disponibili modifichiamo le linee reali, altrimenti quelle virtuali
+                 */
+                if(realFreeCells.equals(2)){
+                    if (player.equals(ControllerInterface.yellow)) {
+                        this.getHeuristicValues().setRealRedOne(this.getHeuristicValues().getRealRedOne() - 1);
+                    } else {
+                        this.getHeuristicValues().setRealYellowOne(this.getHeuristicValues().getRealYellowOne() - 1);
+                    }
+                }else{
+                    if (player.equals(ControllerInterface.yellow)) {
+                        this.getHeuristicValues().setRedOne(this.getHeuristicValues().getRedOne() - 1);
+                    } else {
+                        this.getHeuristicValues().setYellowOne(this.getHeuristicValues().getYellowOne() - 1);
+                    }
+                }
+            } else if (opponentCells.equals(2)) {
+               /**
+                 * se c'è una casella vuota disponibile modifichiamo le linee reali, altrimenti quelle virtuali
+                 */
+                if(realFreeCells.equals(1)){
+                    if (player.equals(ControllerInterface.yellow)) {
+                        this.getHeuristicValues().setRealRedTwo(this.getHeuristicValues().getRealRedTwo() - 1);
+                    } else {
+                        this.getHeuristicValues().setRealYellowTwo(this.getHeuristicValues().getRealYellowTwo() - 1);
+                    }
+                }else{
+                    if (player.equals(ControllerInterface.yellow)) {
+                        this.getHeuristicValues().setRedTwo(this.getHeuristicValues().getRedTwo() - 1);
+                    } else {
+                        this.getHeuristicValues().setYellowTwo(this.getHeuristicValues().getYellowTwo() - 1);
+                    }
+                }
+            } else if (opponentCells.equals(3)) {
+               /**
+                 * modifichiamo le linee reali
+                 */
+                if (player.equals(ControllerInterface.yellow)) {
+                    this.getHeuristicValues().setRealRedThree(this.getHeuristicValues().getRealRedThree() - 1);
+                } else {
+                    this.getHeuristicValues().setRealYellowThree(this.getHeuristicValues().getRealYellowThree() - 1);
                 }
             }
         }
@@ -847,8 +1005,27 @@ class HeuristicValues implements Cloneable {
     private Integer redTwo;
     private Integer redThree;
 
+    private Integer realYellowOne;
+    private Integer realYellowTwo;
+    private Integer realYellowThree;
+    private Integer realRedOne;
+    private Integer realRedTwo;
+    private Integer realRedThree;
+
     public HeuristicValues(){
-        this(0,0,0,0,0,0);
+//        this(0,0,0,0,0,0);
+        setYellowOne(0);
+        setYellowTwo(0);
+        setYellowThree(0);
+        setRedOne(0);
+        setRedTwo(0);
+        setRedThree(0);
+        setRealYellowOne(0);
+        setRealYellowTwo(0);
+        setRealYellowThree(0);
+        setRealRedOne(0);
+        setRealRedTwo(0);
+        setRealRedThree(0);
     }
     
     public HeuristicValues(Integer yellowOne, Integer yellowTwo, Integer yellowThree, Integer redOne, Integer redTwo, Integer redThree){
@@ -946,6 +1123,106 @@ class HeuristicValues implements Cloneable {
 
     @Override
     protected HeuristicValues clone(){
-       return new HeuristicValues(yellowOne, yellowTwo, yellowThree, redOne, redTwo, redThree);
+//       return new HeuristicValues(yellowOne, yellowTwo, yellowThree, redOne, redTwo, redThree);
+        HeuristicValues heuristicClone = new HeuristicValues();
+
+        heuristicClone.setYellowOne(this.getYellowOne());
+        heuristicClone.setYellowTwo(this.getYellowTwo());
+        heuristicClone.setYellowThree(this.getYellowThree());
+        heuristicClone.setRedOne(this.getRedOne());
+        heuristicClone.setRedTwo(this.getRedTwo());
+        heuristicClone.setRedThree(this.getRedThree());
+        heuristicClone.setRealYellowOne(this.getRealYellowOne());
+        heuristicClone.setRealYellowTwo(this.getRealYellowTwo());
+        heuristicClone.setRealYellowThree(this.getRealYellowThree());
+        heuristicClone.setRealRedOne(this.getRealRedOne());
+        heuristicClone.setRealRedTwo(this.getRealRedTwo());
+        heuristicClone.setRealRedThree(this.getRealRedThree());
+
+        return heuristicClone;
+    }
+
+    /**
+     * @return the realYellowOne
+     */
+    public Integer getRealYellowOne() {
+        return realYellowOne;
+    }
+
+    /**
+     * @param realYellowOne the realYellowOne to set
+     */
+    public void setRealYellowOne(Integer realYellowOne) {
+        this.realYellowOne = realYellowOne;
+    }
+
+    /**
+     * @return the realYellowTwo
+     */
+    public Integer getRealYellowTwo() {
+        return realYellowTwo;
+    }
+
+    /**
+     * @param realYellowTwo the realYellowTwo to set
+     */
+    public void setRealYellowTwo(Integer realYellowTwo) {
+        this.realYellowTwo = realYellowTwo;
+    }
+
+    /**
+     * @return the realYellowThree
+     */
+    public Integer getRealYellowThree() {
+        return realYellowThree;
+    }
+
+    /**
+     * @param realYellowThree the realYellowThree to set
+     */
+    public void setRealYellowThree(Integer realYellowThree) {
+        this.realYellowThree = realYellowThree;
+    }
+
+    /**
+     * @return the realRedOne
+     */
+    public Integer getRealRedOne() {
+        return realRedOne;
+    }
+
+    /**
+     * @param realRedOne the realRedOne to set
+     */
+    public void setRealRedOne(Integer realRedOne) {
+        this.realRedOne = realRedOne;
+    }
+
+    /**
+     * @return the realRedTwo
+     */
+    public Integer getRealRedTwo() {
+        return realRedTwo;
+    }
+
+    /**
+     * @param realRedTwo the realRedTwo to set
+     */
+    public void setRealRedTwo(Integer realRedTwo) {
+        this.realRedTwo = realRedTwo;
+    }
+
+    /**
+     * @return the realRedThree
+     */
+    public Integer getRealRedThree() {
+        return realRedThree;
+    }
+
+    /**
+     * @param realRedThree the realRedThree to set
+     */
+    public void setRealRedThree(Integer realRedThree) {
+        this.realRedThree = realRedThree;
     }
 }

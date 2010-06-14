@@ -34,7 +34,7 @@ public class Heuristic {
      */
     public Integer calculateHeuristic(GameState gameState){
 //    c++;
-        Integer temp = countConnectHeuristicOptimized(gameState);
+        Integer temp = countConnectHeuristicOptimizedWithRealValues(gameState);
 //        Integer temp = countConnectHeuristic(gameState);
 //        Integer temp = naiveHeuristic(gameState);
 //        System.out.println(c+": "+temp);
@@ -158,14 +158,85 @@ public class Heuristic {
         //casi particolari
         player=(-1)*gameState.getPlayer();
 //
+        /**
+         * TODO METTERE LA FLAG SULLE CASELLE ATTIVE E NON E DIVERSIFICARE LE SOMME
+         * ED USARLE IN QUESTO CASO PARTICOLARE
+         */
         if(player.equals(ControllerInterface.yellow) && yellowThree>0) return AIPlayerInterface.maxUtilityValue-1;
         if(player.equals(ControllerInterface.red) && redThree>0) return -1*(AIPlayerInterface.maxUtilityValue-1);
-//
+        
+        /**
+         * TODO METTERE LA FLAG SULLE CASELLE ATTIVE E NON E DIVERSIFICARE LE SOMME
+         * ED USARLE IN QUESTO CASO PARTICOLARE
+         */
         if(player.equals(ControllerInterface.red) && yellowThree>1) return AIPlayerInterface.maxUtilityValue-1;
         if(player.equals(ControllerInterface.yellow) && redThree>1) return -1*(AIPlayerInterface.maxUtilityValue-1);
 
         heuristicValue = (weightOne*yellowOne)+(weightTwo*yellowTwo)+(weightThree*yellowThree)
                          -((weightOne*redOne)+(weightTwo*redTwo)+(weightThree*redThree));
+//        System.out.println(gameState+"HEURISTICVALUE = "+heuristicValue+"\nYELLOWTHREE = "+yellowThree);
+        return heuristicValue;
+    }
+
+    /**
+     * valori valutati per il giocatore yellow
+     * @param gameState
+     * @return
+     */
+    private Integer countConnectHeuristicOptimizedWithRealValues(GameState gameState){
+        //c++;
+        Integer yellowOne = gameState.getHeuristicValues().getYellowOne();
+        Integer yellowTwo = gameState.getHeuristicValues().getYellowTwo();
+        Integer yellowThree = gameState.getHeuristicValues().getYellowThree();
+        Integer redOne = gameState.getHeuristicValues().getRedOne();
+        Integer redTwo = gameState.getHeuristicValues().getRedTwo();
+        Integer redThree = gameState.getHeuristicValues().getRedThree();
+
+        Integer realYellowOne = gameState.getHeuristicValues().getRealYellowOne();
+        Integer realYellowTwo = gameState.getHeuristicValues().getRealYellowTwo();
+        Integer realYellowThree = gameState.getHeuristicValues().getRealYellowThree();
+        Integer realRedOne = gameState.getHeuristicValues().getRealRedOne();
+        Integer realRedTwo = gameState.getHeuristicValues().getRealRedTwo();
+        Integer realRedThree = gameState.getHeuristicValues().getRealRedThree();
+        Integer heuristicValue;
+
+        Integer player;
+        // AGGIUSTATI I CASI PARTICOLARI E IL CALCOLO FINALE E' INVARIATO
+//        yellowOne = countConnect(gameState, ControllerInterface.yellow, 1);
+//        yellowTwo = countConnect(gameState, ControllerInterface.yellow, 2);
+//        yellowThree = countConnect(gameState, ControllerInterface.yellow, 3);
+//
+//
+//        redOne = countConnect(gameState, ControllerInterface.red, 1);
+//        redTwo = countConnect(gameState, ControllerInterface.red, 2);
+//        redThree = countConnect(gameState, ControllerInterface.red, 3);
+      //  System.out.println(c+": "+temp);
+
+//        System.out.println("yellowOne = "+yellowOne);
+//        System.out.println("yellowTwo = "+yellowTwo);
+//        System.out.println("yellowThree = "+yellowThree);
+//
+//
+//        System.out.println("redOne = "+redOne);
+//        System.out.println("redTwo = "+redTwo);
+//        System.out.println("redThree = "+redThree);
+        //casi particolari
+        player=(-1)*gameState.getPlayer();
+//
+
+        if(player.equals(ControllerInterface.yellow) && realYellowThree>0) return AIPlayerInterface.maxUtilityValue-1;
+        if(player.equals(ControllerInterface.red) && realRedThree>0) return -1*(AIPlayerInterface.maxUtilityValue-1);
+
+
+        if(player.equals(ControllerInterface.red) && realYellowThree>1) return AIPlayerInterface.maxUtilityValue-1;
+        if(player.equals(ControllerInterface.yellow) && realRedThree>1) return -1*(AIPlayerInterface.maxUtilityValue-1);
+
+        heuristicValue = (weightOne*(yellowOne+realYellowOne))
+                         +(weightTwo*(yellowTwo+realYellowTwo))
+                         +(weightThree*(yellowThree+realYellowThree))
+                         -((weightOne*(redOne+realRedOne))
+                         +(weightTwo*(redTwo+realRedTwo))
+                         +(weightThree*(redThree+realRedThree)));
 //        System.out.println(gameState+"HEURISTICVALUE = "+heuristicValue+"\nYELLOWTHREE = "+yellowThree);
         return heuristicValue;
     }
